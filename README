@@ -1,3 +1,6 @@
 Hyperiums Alliance Tool il a tool used to plan / synchronize attacks, defenses, and others alliance related things.
 
-It use the Mangstadt ( https://github.com/mangstadt/PHP-HAPI ) PHP-HAPI to query Hyperiums.
+It uses :
+
+- Mangstadt PHP-HAPI ( https://github.com/mangstadt/PHP-HAPI ) to query Hyperiums.
+- Cloudhead LessCSS  ( https://github.com/cloudhead/less.js ) for the CSS.
