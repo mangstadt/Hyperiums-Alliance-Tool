@@ -81,6 +81,7 @@ class HAPI{
 		$games = array();
 		for ($i = 0; isset($respParams["game$i"]); $i++){
 			$game = new Game();
+			$game->setIndex($i) ;
 			$game->setName($respParams["game$i"]);
 			$game->setState($respParams["state$i"]);
 			$game->setDescription($respParams["descr$i"]);

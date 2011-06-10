@@ -7,6 +7,7 @@ class Game{
 	const STATE_RUNNING_OPEN = 1;
 	const STATE_NOT_RUNNING_OPEN_REGISTRATION = 2;
 
+	private $index;
 	private $name;
 	private $state;
 	private $description;
@@ -17,6 +18,14 @@ class Game{
 	private $initCash;
 	private $maxOfferedPlanets;
 	private $nextPlanetDelay;
+	
+	public function getIndex() {
+		return $this->index;
+	}
+	
+	public function setIndex($index) {
+		$this->index = $index ;
+	}
 	
 	public function getName(){
 		return $this->name;

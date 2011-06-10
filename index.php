@@ -1,5 +1,14 @@
-<!DOCTYPE html>
+<?php
 
+	error_reporting(E_ERROR) ;
+
+	require_once dirname(__FILE__) .  '/lib/HAPI/bootstrap.php';
+
+	use HAPI\HAPI;
+	use HAPI\Game;
+	
+?>
+<!DOCTYPE html>
 <html lang="en">
 
 	<head>
@@ -36,7 +45,15 @@
 							<form id="loginForm" method="POST">
 								<label for="game_select_input">Game Selection</label>
 								<select name="game_select_input">
-									
+									<?php
+										foreach (HAPI::getAllGames() as $game){
+											$name = $game->getName();
+											$index = $game->getIndex();
+											if ($game->getState() == Game::STATE_RUNNING_OPEN) {
+												echo '<option value="' . $index . '">' . $name . '</option>' ;
+											}
+										}
+									?>
 								</select>
 								<br/>
 								<label for="login_input">Your nickname</label>
