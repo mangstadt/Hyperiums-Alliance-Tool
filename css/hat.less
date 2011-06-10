@@ -1,18 +1,40 @@
 // VARS
+
+// Colors
 @black: #000 ;
 @white: #FFF ;
-@mainWidth: 900px ;
+@mainColor: #AA7 ;
+@inputBorder: #777 ;
 
+// Widths
+@mainWidth: 850px ;
+
+// Fonts and sizes
+@font: Verdana,arial,sans-serif ;
+@fontSize: .8em ;
+
+// Images
 @logo: url('../img/header.jpg') ;
+@hyp: url('../img/logo.png') ;
+@loginLeft: url('../img/login_planet_left.jpg') ;
+@loginRight: url('../img/login_planet_right.jpg') ;
+@uL: url('../img/login_up_left.gif') ;
+@uR: url('../img/login_up_right.gif') ;
+@bL: url('../img/login_down_left.gif') ;
+@bR: url('../img/login_down_right.gif') ;
 
 
 // FUNCTIONS
+
 
 // CSS
 body {
 	padding: 0 ;
 	margin: 0 ;
 	background: @black ;
+	color: @mainColor ;
+	font-family: @font ;
+	font-size: @fontSize ;
 	width: 100% ;
 
 	#logo {
@@ -20,13 +42,85 @@ body {
 		top: 0px ;
 		left: 0px ;
 		background: @logo no-repeat ;
-		width: 100% ;
-		height: 50px ;
+		width: 25% ;
+		height: 174px ;
 	}
 
 	#main {
 		width: @mainWidth ;
 		margin: 20px auto ;
-		background: blue ;
+
+		#header {
+			margin-bottom: 50px ;
+		}
+
+		#content {
+
+			#login {
+
+				width: 70% ;
+				margin: 0px auto ;
+
+				label {
+					position: absolute ;
+					width: 120px ;
+				}
+
+				input[type=text] {
+					border: 1px @inputBorder solid ;
+					background: @black ;
+					width: 150px ;
+					color: @mainColor ;
+					margin-bottom: 10px ;
+					margin-left: 150px ;
+				}
+				input[type=submit] {
+					border: 1px @inputBorder solid ;
+					background: @black ;
+					width: 60px ;
+					color: @mainColor ;
+					margin-top: 20px ;
+				}
+				select {
+					border: 1px @inputBorder solid ;
+					background: @black ;
+					width: 150px ;
+					color: @mainColor ;
+					margin-bottom: 10px ;
+					margin-left: 150px ;
+				}
+
+				.topDiv {
+					float: left ;
+					width: 33% ;
+					height: 22px ;
+				}
+				.oneMore { width: 34% !important ; }
+				.centerDiv {
+					margin: 25px auto ;
+					float: left ;
+					width: 100% ;
+				}
+				.bottomDiv {
+					float: left ;
+					width: 50% ;
+					height: 22px ;
+				}
+				#uL { background: @uL no-repeat ; background-position: top left ; }
+				#uC { font-size: 1.4em ; font-weight: bold; text-align: center ; }
+				#uR { background: @uR no-repeat ; background-position: top right ;  }
+				#cL { background: @loginLeft no-repeat ; float: left ; height: 60px ; width: 25% ; background-position: center ; }
+				#cC { text-align: center ; float: left ; width: 50% ;}
+				#cR { background: @loginRight no-repeat ; float: left ; height: 60px ; width: 25% ; background-position: center ; }
+				#bL { background: @bL no-repeat ; background-position: bottom left ;  }
+				#bR { background: @bR no-repeat ; background-position: bottom right ;  }
+
+			}
+		}
+	
+
 	}
 }
+
+// Some class ...
+.h100 { height: 100px ; }
