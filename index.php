@@ -2,10 +2,39 @@
 
 	error_reporting(E_ERROR) ;
 
-	require_once dirname(__FILE__) .  '/lib/HAPI/bootstrap.php';
+	require_once __DIR__ . '/lib/PHP-HAPI-0.2.0.phar';
 
 	use HAPI\HAPI;
 	use HAPI\Game;
+	
+	$loggedOut = isset($_GET["loggedout"]);
+	
+	$errors = array();
+	if (count($_POST) > 0){
+		$login = trim($_POST["login_input"]);
+		$hkey = trim($_POST["hkey_input"]);
+		$game_select = $_POST["game_select_input"];
+		
+		if (strlen($login) == 0){
+			$errors[] = 'You must specify a nickname.';
+		}
+		
+		if (strlen($hkey) == 0){
+			$errors[] = 'You must specify a HAPI Key.';
+		}
+
+		if (count($errors) == 0){
+			try{
+				$hapi = new HAPI($game_select, $login, $hkey);
+				session_start();
+				$_SESSION['hapi'] = $hapi;
+				header('Location: home.php');
+				exit();
+			} catch (\Exception $e){
+				$errors[] = "Authentication failed with the following message: " . $e->getMessage();
+			}
+		}
+	}
 	
 ?>
 <!DOCTYPE html>
@@ -42,25 +71,40 @@
 					<div id="middle" class="centerDiv">
 						<div id="cL"></div>
 						<div id="cC">
-							<form id="loginForm" method="POST">
+							<?php
+							if ($loggedOut):
+								?><p style="align:center; color:white;">Log off successful.</p><?php
+							endif
+							?>
+							
+							<?php
+							if (count($errors) > 0):
+								?><div style="color:red"><?php 
+								foreach ($errors as $error):
+									echo htmlspecialchars($error) . "<br />";
+								endforeach
+								?></div><?php
+							endif
+							?>
+							<form id="loginForm" method="POST" action="index.php">
 								<label for="game_select_input">Game Selection</label>
 								<select name="game_select_input">
 									<?php
 										foreach (HAPI::getAllGames() as $game){
 											$name = $game->getName();
-											$index = $game->getIndex();
 											if ($game->getState() == Game::STATE_RUNNING_OPEN) {
-												echo '<option value="' . $index . '">' . $name . '</option>' ;
+												$selected = ($name == @$_POST['game_select_input']) ? 'selected="selected"' : '';
+												echo '<option value="' . htmlspecialchars($name) . '" ' . $selected . '>' . htmlspecialchars($name) . '</option>' ;
 											}
 										}
 									?>
 								</select>
 								<br/>
 								<label for="login_input">Your nickname</label>
-								<input type="text" name="login_input" id="login_input" value=""/>
+								<input type="text" name="login_input" id="login_input" value="<?php echo htmlspecialchars(@$_POST['login_input'])?>"/>
 								<br/>
 								<label for="hkey_input">Your HAPI Key</label>
-								<input type="text" name="hkey_input" id="hkey_input" value=""/>
+								<input type="text" name="hkey_input" id="hkey_input" value="<?php echo htmlspecialchars(@$_POST['hkey_input'])?>"/>
 								<br/>
 								<input type="submit" value="Login"/>
 							</form>
