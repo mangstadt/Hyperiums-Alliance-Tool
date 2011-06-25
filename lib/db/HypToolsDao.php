@@ -22,11 +22,11 @@ class HypToolsDao{
 	public function __construct(){
 		if (isset($_SERVER['db_host'])){
 			//we are on pagodabox
-			$host = $_SERVER['db_host'];
-			$name = $_SERVER['db_name'];
-			$user = $_SERVER['db_user'];
+			$host = $_SERVER['db_host']; //localhost:/tmp/mysql/daniela.sock
+			$name = $_SERVER['db_name']; //daniela
+			$user = $_SERVER['db_user']; //melita
 			$pass = $_SERVER['db_pass'];
-			$this->db = new PDO("mysqli:host=$host;dbName=$name", $user, $pass);
+			$this->db = new PDO("mysql:host=$host;dbname=$name", $user, $pass);
 		} else {
 			//we are on my local workstation
 			//host of "localhost" binds to socket at /var/mysql/mysql.sock -- edit /etc/my.cf
