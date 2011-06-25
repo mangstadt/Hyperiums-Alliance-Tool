@@ -26,7 +26,7 @@ class HypToolsDao{
 			$name = $_SERVER['db_name'];
 			$user = $_SERVER['db_user'];
 			$pass = $_SERVER['db_pass'];
-			$this->db = new PDO("mysql:host=$host;dbName=$name", $user, $pass);
+			$this->db = new PDO("mysqli:host=$host;dbName=$name", $user, $pass);
 		} else {
 			//we are on my local workstation
 			//host of "localhost" binds to socket at /var/mysql/mysql.sock -- edit /etc/my.cf
