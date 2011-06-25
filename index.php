@@ -1,12 +1,13 @@
 <?php
-
+	require_once 'lib/bootstrap.php';
+	
+	var_dump(@$_GET["page"]);
 	error_reporting(E_ERROR) ;
-
-	require_once __DIR__ . '/lib/PHP-HAPI-0.2.0.phar';
 
 	use HAPI\HAPI;
 	use HAPI\Game;
-	
+	use db\HypToolsDao;
+
 	$loggedOut = isset($_GET["loggedout"]);
 	
 	$errors = array();
@@ -25,9 +26,17 @@
 
 		if (count($errors) == 0){
 			try{
+				//authenticate with Hyperiums
 				$hapi = new HAPI($game_select, $login, $hkey);
 				session_start();
 				$_SESSION['hapi'] = $hapi;
+				
+				//get player info from database
+				$dao = new HypToolsDao();
+				$player = $dao->selsertPlayer($hapi->getSession()->getPlayerName());
+				$dao->updatePlayerLastLogin($player);
+				$_SESSION['player'] = $player;
+				
 				header('Location: home.php');
 				exit();
 			} catch (\Exception $e){
