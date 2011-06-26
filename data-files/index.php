@@ -6,7 +6,8 @@
 
 //password protect this script
 $password = @$_POST["password"];
-if ($password === null || $password != "glass"){
+$correctPw = isset($_SERVER['admin_pw']) ? $_SERVER['admin_pw'] : 'glass';
+if ($password === null || $password != $correctPw){
 	?>
 	<html><body>
 	Enter passwords:
