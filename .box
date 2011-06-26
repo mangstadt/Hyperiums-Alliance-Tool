@@ -1,1 +1,1 @@
-php_extensions: [pdo, pdo_mysql]
+php_extensions: [pdo_mysql]
