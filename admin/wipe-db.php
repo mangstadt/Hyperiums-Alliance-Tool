@@ -27,5 +27,5 @@ header("Content-Type: text/plain");
 echo "Dropping all tables...\n";
 flush();
 $dao = new HypToolsDao();
-$dao->dropTables();
+$dao->dropAllTables();
 echo "Done.";

@@ -35,6 +35,7 @@ if ($joinTag !== null){
 					$dao->insertAllianceJoinRequest($player, $alliance);
 					$joinTagSuccess = "Join request sent.";
 				}
+				$joinTag = "";
 			}
 		} else {
 			$joinTagError = "Alliance does not exist.";

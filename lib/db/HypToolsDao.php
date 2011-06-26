@@ -38,8 +38,7 @@ class HypToolsDao{
 			$this->db = new PDO("mysql:unix_socket=$host;dbname=$name", $user, $pass);
 		} else {
 			//we are on my local workstation
-			//host of "localhost" binds to socket at /var/mysql/mysql.sock -- edit /etc/my.cf
-			$this->db = new PDO("mysql:host=localhost", "root", "root");
+			$this->db = new PDO("mysql:unix_socket=/tmp/mysql.sock", "root", "root");
 			$this->db->exec("CREATE DATABASE IF NOT EXISTS hypTools");
 			$this->db->exec("USE hypTools");
 		}
@@ -397,7 +396,7 @@ class HypToolsDao{
 		SELECT a.*, p.*, p.name AS playerName
 		FROM alliances a INNER JOIN players p ON a.president = p.playerId
 		WHERE Ucase(a.tag) = :tag
-		AND gameId = :gameId
+		AND a.gameId = :gameId
 		";
 		$stmt = $this->db->prepare($sql);
 		$stmt->bindValue(":tag", strtoupper($tag), PDO::PARAM_STR);
