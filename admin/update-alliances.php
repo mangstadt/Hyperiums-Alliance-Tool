@@ -1,7 +1,7 @@
 <?php
 /*
- * This script will upsert each alliance in an alliance data file into the database.
- * It expects there to be only one alliance data file in this directory and the file must have the extension ".txt.gz".
+ * This script will upsert each alliance with data from alliance data files.
+ * It expects there to be alliance data files in this directory with file names in the format "<gameName>-<yyyymmdd>-alliance.txt.gz".  For example: "Hyperiums6-20110625-alliances.txt.gz"
  */
 
 //logged in?
@@ -18,64 +18,63 @@ use db\HypToolsDao;
 
 header("Content-Type: text/plain");
 
-//treats the first ".txt.gz" file it finds in this directory as the alliance data file
-$handler = opendir(__DIR__);
-$dataFile = null;
-while ($file = readdir($handler)) {
-	$ext = substr($file, -7);
-	if ($ext == ".txt.gz"){
-		$dataFile = $file;
-		break;
-	}
-}
-
-if ($dataFile == null){
-	echo "Error: No data file found.";
-	exit();
-}
-
 echo "Working, please wait...\n";
 flush();
 
-//get the game name from the file name
-$gameName = null;
-if (preg_match("/^(.*?)-/", $dataFile, $matches)){
-	$gameName = $matches[1];
-} else {
-	echo "Error: Game name not found in file name.";
+//find the data files
+$handler = opendir(__DIR__);
+$dataFiles = array();
+while ($file = readdir($handler)) {
+	if (preg_match("/^(.*?)-(.*?)-alliances\\.txt\\.gz\$/", $file, $matches)){
+		$gameName = $matches[1];
+		$dataFiles[] = array($gameName, $file);
+	}
+}
+
+if (count($dataFiles) == 0){
+	echo "Error: No data files found.";
 	exit();
 }
 
-//make sure the game exists
+//get all Hyperiums games
 $games = HAPI::getAllGames();
-$game = null;
-foreach ($games as $g){
-	if (strcasecmp($g->getName(), $gameName) == 0){
-		$game = $g;
-		break;
-	}
-}
-if ($game == null){
-	echo "Error: Game \"$gameName\" not found.";
-	exit();
-}
 
-//init DAO
+//init the DAO
 $dao = new HypToolsDao();
-$game = $dao->upsertGame($game->getName(), $game->getDescription());
-$dao->setGame($game);
 
-$dao->beginTransaction();
-try{
-	$parser = new AllianceParser(__DIR__ . "/$dataFile");
-	$num = 0;
-	while ($alliance = $parser->next()){
-		$dao->upsertAlliance($alliance->getTag(), $alliance->getName(), $alliance->getPresident());
-		$num++;
+foreach ($dataFiles as $dataFile){
+	$gameName = $dataFile[0];
+	$file = $dataFile[1];
+	
+	//make sure the game exists
+	$game = null;
+	foreach ($games as $g){
+		if (strcasecmp($g->getName(), $gameName) == 0){
+			$game = $g;
+			break;
+		}
 	}
-	$dao->commit();
-} catch (Exception $e){
-	$dao->rollBack();
-	throw $e;
+	if ($game == null){
+		echo "Error: Could not process \"$file\". Game with name \"$gameName\" does not exist.\n";
+		continue;
+	}
+	
+	//set up DAO
+	$game = $dao->upsertGame($game->getName(), $game->getDescription());
+	$dao->setGame($game);
+	
+	$dao->beginTransaction();
+	try{
+		$parser = new AllianceParser(__DIR__ . "/$file");
+		$num = 0;
+		while ($alliance = $parser->next()){
+			$dao->upsertAlliance($alliance->getTag(), $alliance->getName(), $alliance->getPresident());
+			$num++;
+		}
+		$dao->commit();
+	} catch (Exception $e){
+		$dao->rollBack();
+		throw $e;
+	}
+	echo "Processed $num alliances in file \"$file\".\n";
 }
-echo "Processed $num alliances.";
