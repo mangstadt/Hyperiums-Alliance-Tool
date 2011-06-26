@@ -27,7 +27,6 @@ class HypToolsDao{
 			$user = $_SERVER['db_user']; //melita
 			$pass = $_SERVER['db_pass'];
 			
-			//$this->db = new PDO("mysql:host=$host;dbname=$name", $user, $pass);
 			$host = substr($host, strpos($host, ":")+1);
 			$this->db = new PDO("mysql:unix_socket=$host;dbname=$name", $user, $pass);
 		} else {
@@ -342,6 +341,23 @@ class HypToolsDao{
 		}
 		
 		return $alliance;
+	}
+	
+	/**
+	 * Wipes the database.
+	 */
+	public function dropAllTables(){
+		$this->beginTransaction();
+		try{
+			$tables = array("permissions", "alliances", "players");
+			foreach ($tables as $t){
+				$this->db->exec("DROP TABLE $t");
+			}
+			$this->commit();
+		} catch (Exception $e){
+			$this->rollBack();
+			throw $e;
+		}
 	}
 	
 	/**

@@ -11,7 +11,7 @@ if ($password === null || $password != $correctPw){
 	?>
 	<html><body>
 	Enter passwords:
-	<form action="index.php" method="POST">
+	<form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"])?>" method="POST">
 	<input type="text" name="password" />
 	<input type="submit" />
 	</form>
