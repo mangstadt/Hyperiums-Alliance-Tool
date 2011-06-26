@@ -4,19 +4,10 @@
  * It expects there to be only one alliance data file in this directory and the file must have the extension ".txt.gz".
  */
 
-//password protect this script
-$password = @$_POST["password"];
-$correctPw = isset($_SERVER['admin_pw']) ? $_SERVER['admin_pw'] : 'glass';
-if ($password === null || $password != $correctPw){
-	?>
-	<html><body>
-	Enter passwords:
-	<form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"])?>" method="POST">
-	<input type="text" name="password" />
-	<input type="submit" />
-	</form>
-	</body></html>
-	<?php
+//logged in?
+session_start();
+if (!isset($_SESSION['loggedIn'])){
+	header("Location: index.php");
 	exit();
 }
 
