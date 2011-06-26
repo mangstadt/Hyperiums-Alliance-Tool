@@ -12,7 +12,7 @@ if ($hapi == null){
 
 $player = $_SESSION['player'];
 
-$dao = new HypToolsDao();
+$dao = new HypToolsDao($player->game);
 
 //user has requested to join an alliance
 $joinTag = @$_POST["joinTag"];

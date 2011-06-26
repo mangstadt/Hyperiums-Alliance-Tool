@@ -7,6 +7,13 @@ namespace db;
  */
 class Alliance{
 	public $allianceId;
+	
+	/**
+	 * The game this alliance belongs to.
+	 * @var Game
+	 */
+	public $game;
+	
 	public $tag;
 	public $name;
 	

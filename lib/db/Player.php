@@ -7,6 +7,13 @@ namespace db;
  */
 class Player{
 	public $id;
+	
+	/**
+	 * The game this player belongs to.
+	 * @var Game
+	 */
+	public $game;
+	
 	public $name;
 	
 	/**

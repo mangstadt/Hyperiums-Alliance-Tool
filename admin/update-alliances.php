@@ -21,6 +21,7 @@ if ($password === null || $password != $correctPw){
 }
 
 require_once '../lib/bootstrap.php';
+use HAPI\HAPI;
 use HAPI\Parsers\AllianceParser;
 use db\HypToolsDao;
 
@@ -38,13 +39,41 @@ while ($file = readdir($handler)) {
 }
 
 if ($dataFile == null){
-	echo "No data file found.";
+	echo "Error: No data file found.";
 	exit();
 }
 
 echo "Working, please wait...\n";
 flush();
+
+//get the game name from the file name
+$gameName = null;
+if (preg_match("/^(.*?)-/", $dataFile, $matches)){
+	$gameName = $matches[1];
+} else {
+	echo "Error: Game name not found in file name.";
+	exit();
+}
+
+//make sure the game exists
+$games = HAPI::getAllGames();
+$game = null;
+foreach ($games as $g){
+	if (strcasecmp($g->getName(), $gameName) == 0){
+		$game = $g;
+		break;
+	}
+}
+if ($game == null){
+	echo "Error: Game \"$gameName\" not found.";
+	exit();
+}
+
+//init DAO
 $dao = new HypToolsDao();
+$game = $dao->upsertGame($game->getName(), $game->getDescription());
+$dao->setGame($game);
+
 $dao->beginTransaction();
 try{
 	$parser = new AllianceParser(__DIR__ . "/$dataFile");

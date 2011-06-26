@@ -17,9 +17,16 @@ class HypToolsDao{
 	private $db;
 	
 	/**
-	 * Creates the DAO.
+	 * The game that the player is logged into.
+	 * @var Game
 	 */
-	public function __construct(){
+	private $game;
+	
+	/**
+	 * Creates the DAO.
+	 * @param Game $game (optional) the game the player is logged into
+	 */
+	public function __construct(Game $game = null){
 		if (isset($_SERVER['db_host'])){
 			//we are on pagodabox
 			$host = $_SERVER['db_host']; //localhost:/tmp/mysql/daniela.sock
@@ -49,6 +56,62 @@ class HypToolsDao{
 				$this->db->exec($query);
 			}
 		}
+
+		$this->game = $game;
+	}
+	
+	/**
+	 * Sets the game that the player is logged into.
+	 * @param Game $game the game the player is logged into
+	 */
+	public function setGame(Game $game){
+		$this->game = $game;
+	}
+	
+	/**
+	 * Updates or inserts game info.
+	 * @param string $name the game name
+	 * @param string $description the game description
+	 * @return Game the game
+	 */
+	public function upsertGame($name, $description){
+		$game = new Game();
+		$game->name = $name;
+		$game->description = $description;
+		
+		$sql = "SELECT gameId FROM games WHERE Ucase(name) = :name";
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindValue(":name", strtoupper($game->name), PDO::PARAM_STR);
+		$stmt->execute();
+		if ($row = $stmt->fetch()){
+			$game->id = $row[0];
+			
+			$sql = "
+			UPDATE games SET
+			name = :name,
+			description = :description
+			WHERE gameId = :gameId
+			";
+			$stmt = $this->db->prepare($sql);
+			$stmt->bindValue(":name", $game->name, PDO::PARAM_STR);
+			$stmt->bindValue(":description", $game->description, PDO::PARAM_STR);
+			$stmt->bindValue(":gameId", $game->id, PDO::PARAM_INT);
+			$stmt->execute();
+		} else {
+			$sql = "
+			INSERT INTO games
+			( name,  description) VALUES
+			(:name, :description)
+			";
+			$stmt = $this->db->prepare($sql);
+			$stmt->bindValue(":name", $game->name, PDO::PARAM_STR);
+			$stmt->bindValue(":description", $game->description, PDO::PARAM_STR);
+			$stmt->execute();
+			
+			$game->id = $this->db->lastInsertId();
+		}
+		
+		return $game;
 	}
 	
 	/**
@@ -57,12 +120,19 @@ class HypToolsDao{
 	 * @return Player the player
 	 */
 	public function selsertPlayer($name){
-		$sql = "SELECT * FROM players WHERE Ucase(name) = :name";
+		$player = new Player();
+		$player->game = $this->game;
+		
+		$sql = "
+		SELECT * FROM players
+		WHERE Ucase(name) = :name
+		AND gameId = :gameId
+		";
 		$stmt = $this->db->prepare($sql);
 		$stmt->bindValue(":name", strtoupper($name), PDO::PARAM_STR);
+		$stmt->bindValue(":gameId", $this->game->id, PDO::PARAM_INT);
 		$stmt->execute();
 		if ($row = $stmt->fetch()){
-			$player = new Player();
 			$player->id = $row['playerId'];
 			$player->name = $row['name'];
 			if ($row['lastLoginDate'] != null){
@@ -72,14 +142,14 @@ class HypToolsDao{
 		} else {
 			$sql = "
 			INSERT INTO players
-			( name, lastLoginDate, lastLoginIP) VALUES
-			(:name, NULL,          NULL)
+			( name,  gameId, lastLoginDate, lastLoginIP) VALUES
+			(:name, :gameId, NULL,          NULL)
 			";
 			$stmt = $this->db->prepare($sql);
 			$stmt->bindValue(":name", $name, PDO::PARAM_STR);
+			$stmt->bindValue(":gameId", $this->game->id, PDO::PARAM_INT);
 			$stmt->execute();
 			
-			$player = new Player();
 			$player->id = $this->db->lastInsertId();
 			$player->name = $name;
 		}
@@ -115,7 +185,7 @@ class HypToolsDao{
 	 * @param string $orderBy (optional) sort the permissions by this column
 	 * @return Permission the player's permissions
 	 */
-	private function selectPermissions($player, $status = null, $orderBy = null){
+	private function selectPermissions(Player $player, $status = null, $orderBy = null){
 		$sql = "
 		SELECT p.*, a.*, pl.*, a.name AS allianceName, p2.playerId AS presidentId, p2.name AS presidentName, pl.name AS playerName
 		FROM permissions p
@@ -150,21 +220,24 @@ class HypToolsDao{
 			$permission->permView = $this->bool($row['permView']);
 			$permission->permAdmin = $this->bool($row['permAdmin']);
 			
-			$player = new Player();
-			$player->id = $row['playerId'];
-			$player->name = $row['playerName'];
-			$permission->player = $player;
+			$player2 = new Player();
+			$player2->id = $row['playerId'];
+			$player2->name = $row['playerName'];
+			$player2->game = $player->game;
+			$permission->player = $player2;
 			
 			$alliance = new Alliance();
 			$alliance->id = $row['allianceId'];
 			$alliance->tag = $row['tag'];
 			$alliance->name = $row['allianceName'];
+			$alliance->game = $player->game;
 			$permission->alliance = $alliance;
 			
 			$president = new Player();
 			$president->id = $row["presidentId"];
 			$president->name = $row["presidentName"];
-			$permission->president = $president;
+			$president->game = $player->game;
+			$alliance->president = $president;
 			
 			$permissions[] = $permission;
 		}
@@ -195,9 +268,14 @@ class HypToolsDao{
 	 * @return boolean true if the alliance exists, false if not
 	 */
 	public function doesAllianceExist($tag){
-		$sql = "SELECT Count(*) FROM alliances WHERE Ucase(tag) = :tag";
+		$sql = "
+		SELECT Count(*) FROM alliances
+		WHERE Ucase(tag) = :tag
+		AND gameId = :gameId
+		";
 		$stmt = $this->db->prepare($sql);
 		$stmt->bindValue(":tag", strtoupper($tag), PDO::PARAM_STR);
+		$stmt->bindValue(":gameId", $this->game->id, PDO::PARAM_INT);
 		$stmt->execute();
 		$row = $stmt->fetch();
 		return $row[0] > 0;
@@ -228,13 +306,14 @@ class HypToolsDao{
 		} else {
 			$sql = "
 			INSERT INTO alliances
-			( tag,  name,  president, registeredDate,  motd) VALUES
-			(:tag, :name, :president, NULL,            NULL)
+			( tag,  name,  president,  gameId, registeredDate,  motd) VALUES
+			(:tag, :name, :president, :gameId, NULL,            NULL)
 			";
 			$stmt = $this->db->prepare($sql);
 			$stmt->bindValue(":tag", $tag, PDO::PARAM_STR);
 			$stmt->bindValue(":name", $name, PDO::PARAM_STR);
 			$stmt->bindValue(":president", $presPlayer->id, PDO::PARAM_INT);
+			$stmt->bindValue(":gameId", $this->game->id, PDO::PARAM_INT);
 			$stmt->execute();
 		}
 	}
@@ -250,10 +329,13 @@ class HypToolsDao{
 		SELECT Count(*) FROM permissions
 		WHERE playerId = :playerId
 		AND allianceId = :allianceId
+		AND (status = :pending OR status = :accepted)
 		";
 		$stmt = $this->db->prepare($sql);
 		$stmt->bindValue(":playerId", $player->id, PDO::PARAM_INT);
 		$stmt->bindValue(":allianceId", $alliance->id, PDO::PARAM_INT);
+		$stmt->bindValue(":pending", Permission::STATUS_REQUESTED, PDO::PARAM_INT);
+		$stmt->bindValue(":accepted", Permission::STATUS_ACCEPTED, PDO::PARAM_INT);
 		$stmt->execute();
 		$row = $stmt->fetch();
 		return $row[0] > 0;
@@ -315,9 +397,11 @@ class HypToolsDao{
 		SELECT a.*, p.*, p.name AS playerName
 		FROM alliances a INNER JOIN players p ON a.president = p.playerId
 		WHERE Ucase(a.tag) = :tag
+		AND gameId = :gameId
 		";
 		$stmt = $this->db->prepare($sql);
 		$stmt->bindValue(":tag", strtoupper($tag), PDO::PARAM_STR);
+		$stmt->bindValue(":gameId", $this->game->id, PDO::PARAM_INT);
 		$stmt->execute();
 		if ($row = $stmt->fetch()){
 			$alliance = new Alliance();
@@ -328,6 +412,7 @@ class HypToolsDao{
 				$alliance->registeredDate = new DateTime($row['registeredDate']);
 			}
 			$alliance->motd = $row['motd'];
+			$alliance->game = $this->game;
 			
 			$president = new Player();
 			$president->id = $row["playerId"];
@@ -337,6 +422,7 @@ class HypToolsDao{
 				$president->lastLoginDate = new DateTime($date);
 			}
 			$president->lastLoginIP = $row["lastLoginIP"];
+			$president->game = $this->game;
 			$alliance->president = $president;
 		}
 		
@@ -349,7 +435,7 @@ class HypToolsDao{
 	public function dropAllTables(){
 		$this->beginTransaction();
 		try{
-			$tables = array("permissions", "alliances", "players");
+			$tables = array("permissions", "alliances", "players", "games");
 			foreach ($tables as $t){
 				$this->db->exec("DROP TABLE $t");
 			}
@@ -366,9 +452,14 @@ class HypToolsDao{
 	 * @return integer the alliance's ID or null if not found
 	 */
 	private function selectAllianceId($tag){
-		$sql = "SELECT allianceId FROM alliances WHERE Ucase(tag) = :tag";
+		$sql = "
+		SELECT allianceId FROM alliances
+		WHERE Ucase(tag) = :tag
+		AND gameId = :gameId
+		";
 		$stmt = $this->db->prepare($sql);
 		$stmt->bindValue(":tag", strtoupper($tag), PDO::PARAM_STR);
+		$stmt->bindValue(":gameId", $this->game->id, PDO::PARAM_INT);
 		$stmt->execute();
 		if ($row = $stmt->fetch()){
 			return $row[0];

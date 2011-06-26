@@ -1,8 +1,22 @@
 --NOTE: There must be no semi-colons in any of the comments!
 
+--All Hyperiums games (such as "Hyperiums6")
+CREATE TABLE IF NOT EXISTS games(
+	gameId INT PRIMARY KEY AUTO_INCREMENT,
+	
+	--the game's name
+	name VARCHAR(50) NOT NULL,
+	
+	--the game's description
+	description VARCHAR(128)
+);
+
 --All players that have logged into our site (or that are alliances presidents)
 CREATE TABLE IF NOT EXISTS players(
 	playerId INT PRIMARY KEY AUTO_INCREMENT,
+	
+	--the game that this player belongs to
+	gameId INT NOT NULL REFERENCES games(gameId),
 	
 	--the player's name
 	name VARCHAR(50) NOT NULL,
@@ -17,6 +31,9 @@ CREATE TABLE IF NOT EXISTS players(
 --Contains all alliances in the game, whether they are registered with our site or not.
 CREATE TABLE IF NOT EXISTS alliances(
 	allianceId INT PRIMARY KEY AUTO_INCREMENT,
+	
+	--the game that this alliance belongs to
+	gameId INT NOT NULL REFERENCES games(gameId),
 	
 	--the tag (without brackets)
 	tag VARCHAR(5) NOT NULL,

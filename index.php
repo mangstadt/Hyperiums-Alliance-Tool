@@ -10,6 +10,8 @@
 
 	$loggedOut = isset($_GET["loggedout"]);
 	
+	$games = HAPI::getAllGames();
+	
 	$errors = array();
 	if (count($_POST) > 0){
 		$login = trim($_POST["login_input"]);
@@ -31,8 +33,25 @@
 				session_start();
 				$_SESSION['hapi'] = $hapi;
 				
-				//get player info from database
+				//find the game the user selected
+				$game = null; //HAPI\Game
+				foreach ($games as $g){
+					if (strcasecmp($g->getName(), $game_select) == 0){
+						$game = $g;
+						break;
+					}
+				}
+				
+				//init the DAO
 				$dao = new HypToolsDao();
+				
+				//insert game into DB
+				$game = $dao->upsertGame($game->getName(), $game->getDescription());
+				
+				//give game to DAO
+				$dao->setGame($game);
+				
+				//get player info from database
 				$player = $dao->selsertPlayer($hapi->getSession()->getPlayerName());
 				$dao->updatePlayerLastLogin($player);
 				$_SESSION['player'] = $player;
@@ -99,7 +118,7 @@
 								<label for="game_select_input">Game Selection</label>
 								<select name="game_select_input">
 									<?php
-										foreach (HAPI::getAllGames() as $game){
+										foreach ($games as $game){
 											$name = $game->getName();
 											if ($game->getState() == Game::STATE_RUNNING_OPEN) {
 												$selected = ($name == @$_POST['game_select_input']) ? 'selected="selected"' : '';
