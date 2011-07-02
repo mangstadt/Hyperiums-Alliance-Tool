@@ -6,7 +6,7 @@ namespace db;
  * @author mangstadt
  */
 class Alliance{
-	public $allianceId;
+	public $id;
 	
 	/**
 	 * The game this alliance belongs to.
