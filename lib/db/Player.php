@@ -27,10 +27,4 @@ class Player{
 	 * @var DateTime
 	 */
 	public $lastLoginDate;
-	
-	/**
-	 * The player's IP address when he last logged in.
-	 * @var string
-	 */
-	public $lastLoginIP;
 }

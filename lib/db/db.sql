@@ -19,16 +19,13 @@ CREATE TABLE IF NOT EXISTS players(
 	gameId INT NOT NULL REFERENCES games(gameId),
 	
 	--The Hyperiums player ID
-	hypPlayerId INT NOT NULL,
+	hypPlayerId INT,
 	
 	--the player's name
 	name VARCHAR(50) NOT NULL,
 	
 	--the last time the player logged in
-	lastLoginDate DATETIME,
-	
-	--the IP address of the last login
-	lastLoginIP VARCHAR(15)
+	lastLoginDate DATETIME
 );
 
 --Contains all alliances in the game, whether they are registered with our site or not.

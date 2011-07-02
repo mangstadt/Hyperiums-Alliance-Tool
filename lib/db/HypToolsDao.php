@@ -102,23 +102,30 @@ class HypToolsDao{
 	
 	/**
 	 * Selects a player from the database or creates a new row if one doesn't exist.
-	 * @param integer $hypPlayerId the Hyperiums player ID
 	 * @param string $name the player name
+	 * @param integer $hypPlayerId the Hyperiums player ID
 	 * @return Player the player
 	 */
-	public function upsertPlayer($hypPlayerId, $name){
+	public function upsertPlayer($name, $hypPlayerId = null){
 		$player = new Player();
 		$player->game = $this->game;
 		$player->name = $name;
 		$player->hypPlayerId = $hypPlayerId;
 		
-		$sql = "
-		SELECT playerId FROM players
-		WHERE hypPlayerId = :hypPlayerId
-		AND gameId = :gameId
-		";
+		$sql = "SELECT playerId FROM players WHERE";
+		if ($hypPlayerId === null){
+			$sql .= " Ucase(name) = Ucase(:name)";
+		} else {
+			$sql .= " hypPlayerId = :hypPlayerId";
+		}
+		$sql .= " AND gameId = :gameId";
+		
 		$stmt = $this->db->prepare($sql);
-		$stmt->bindValue(":hypPlayerId", $hypPlayerId, PDO::PARAM_INT);
+		if ($hypPlayerId === null){
+			$stmt->bindValue(":name", $name, PDO::PARAM_STR);
+		} else {
+			$stmt->bindValue(":hypPlayerId", $hypPlayerId, PDO::PARAM_INT);
+		}
 		$stmt->bindValue(":gameId", $this->game->id, PDO::PARAM_INT);
 		$stmt->execute();
 		if ($row = $stmt->fetch()){
@@ -137,8 +144,8 @@ class HypToolsDao{
 		} else {
 			$sql = "
 			INSERT INTO players
-			( name,  hypPlayerId,  gameId, lastLoginDate, lastLoginIP) VALUES
-			(:name, :hypPlayerId, :gameId, NULL,          NULL)
+			( name,  hypPlayerId,  gameId, lastLoginDate) VALUES
+			(:name, :hypPlayerId, :gameId, NULL)
 			";
 			$stmt = $this->db->prepare($sql);
 			$stmt->bindValue(":name", $name, PDO::PARAM_STR);
@@ -159,18 +166,15 @@ class HypToolsDao{
 	public function updatePlayerLastLogin(Player $player){
 		$sql = "
 		UPDATE players SET
-		lastLoginDate = Now(),
-		lastLoginIP = :lastLoginIP
+		lastLoginDate = Now()
 		WHERE playerId = :playerId
 		";
 		$stmt = $this->db->prepare($sql);
 		$stmt->bindValue(":playerId", $player->id, PDO::PARAM_INT);
-		$stmt->bindValue(":lastLoginIP", $_SERVER["REMOTE_ADDR"], PDO::PARAM_STR);
 		$stmt->execute();
 		
 		//update object
 		$player->lastLoginDate = new DateTime("now");
-		$player->lastLoginIP = $_SERVER["REMOTE_ADDR"];
 	}
 	
 	/**
@@ -199,7 +203,7 @@ class HypToolsDao{
 	 * @param string $president the name of the president
 	 */
 	public function upsertAlliance($tag, $name, $president){
-		$presPlayer = $this->selsertPlayer($president);
+		$presPlayer = $this->upsertPlayer($president);
 		
 		$allianceId = $this->selectAllianceId($tag);
 		if ($allianceId !== null){
@@ -262,7 +266,7 @@ class HypToolsDao{
 		SELECT j.*,
 		a.*, a.name AS allianceName,
 		p.*, p.name AS playerName,
-		p2.*, p2.playerId AS presidentId, p2.name AS presidentName, p2.lastLoginDate AS presidentLastLoginDate, p2.lastLoginIP AS presidentLastLoginIP,
+		p2.*, p2.playerId AS presidentId, p2.name AS presidentName, p2.lastLoginDate AS presidentLastLoginDate,
 		g.*, g.name AS gameName, g.description AS gameDescription
 		FROM joinRequests j
 		INNER JOIN alliances a ON j.allianceID = a.allianceID
@@ -291,7 +295,6 @@ class HypToolsDao{
 			$player->id = $row['playerId'];
 			$player->name = $row['playerName'];
 			$player->lastLoginDate = $this->date($row['lastLoginDate']);
-			$player->lastLoginIP = $row['lastLoginIP'];
 			$player->game = $game;
 			$joinRequest->player = $player;
 			
@@ -299,13 +302,11 @@ class HypToolsDao{
 			$president->id = $row['presidentId'];
 			$president->name = $row['presidentName'];
 			$president->lastLoginDate = $this->date($row['presidentLastLoginDate']);
-			$president->lastLoginIP = $row['presidentLastLoginIP'];
 			$president->game = $game;
 			
 			$alliance = new Alliance();
 			$alliance->id = $row['allianceId'];
 			$alliance->name = $row['allianceName'];
-			$alliance->description = $row['allianceDescription'];
 			$alliance->tag = $row['tag'];
 			$alliance->registeredDate = $this->date($row['registeredDate']);
 			$alliance->motd = $row['motd'];
@@ -330,7 +331,7 @@ class HypToolsDao{
 		SELECT p.*,
 		a.*, a.name AS allianceName,
 		pl.*, pl.name AS playerName,
-		pl2.playerId AS presidentId, pl2.name AS presidentName, pl2.lastLoginDate AS presidentLastLoginDate, pl2.lastLoginIP AS presidentLastLoginIP,
+		pl2.playerId AS presidentId, pl2.name AS presidentName, pl2.lastLoginDate AS presidentLastLoginDate,
 		g.*, g.name AS gameName, g.description AS gameDescription
 		FROM permissions p
 		INNER JOIN players pl ON p.playerId = pl.playerId
@@ -363,7 +364,6 @@ class HypToolsDao{
 			$player->id = $row['playerId'];
 			$player->name = $row['playerName'];
 			$player->lastLoginDate = $this->date($row['lastLoginDate']);
-			$player->lastLoginIP = $row['lastLoginIP'];
 			$player->game = $game;
 			$permission->player = $player;
 			
@@ -371,13 +371,11 @@ class HypToolsDao{
 			$president->id = $row['presidentId'];
 			$president->name = $row['presidentName'];
 			$president->lastLoginDate = $this->date($row['presidentLastLoginDate']);
-			$president->lastLoginIP = $row['presidentLastLoginIP'];
 			$president->game = $game;
 			
 			$alliance = new Alliance();
 			$alliance->id = $row['allianceId'];
 			$alliance->name = $row['allianceName'];
-			$alliance->description = $row['allianceDescription'];
 			$alliance->tag = $row['tag'];
 			$alliance->registeredDate = $this->date($row['registeredDate']);
 			$alliance->motd = $row['motd'];
@@ -483,7 +481,6 @@ class HypToolsDao{
 			$president->id = $row["playerId"];
 			$president->name = $row["playerName"];
 			$president->lastLoginDate = $this->date($row["lastLoginDate"]);
-			$president->lastLoginIP = $row["lastLoginIP"];
 			$president->game = $this->game;
 			$alliance->president = $president;
 		}
