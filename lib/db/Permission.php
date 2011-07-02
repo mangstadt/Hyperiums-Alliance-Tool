@@ -6,10 +6,6 @@ namespace db;
  * @author mangstadt
  */
 class Permission{
-	const STATUS_REQUESTED = 0;
-	const STATUS_ACCEPTED = 1;
-	const STATUS_REJECTED = 2;
-	
 	public $id;
 	
 	/**
@@ -23,22 +19,10 @@ class Permission{
 	public $alliance;
 	
 	/**
-	 * See Permission::STATUS_* constants.
-	 * @var integer
-	 */
-	public $status;
-	
-	/**
-	 * The date the join request was sent.
+	 * The date the player joined the alliance.
 	 * @var DateTime
 	 */
-	public $requestDate;
-	
-	/**
-	 * The date the join request was accepted or rejected.
-	 * @var DateTime
-	 */
-	public $acceptDate;
+	public $joinDate;
 	
 	/**
 	 * True if the player has permission to submit info to the alliance.

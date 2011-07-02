@@ -51,6 +51,20 @@ CREATE TABLE IF NOT EXISTS alliances(
 	motd VARCHAR(1024)
 );
 
+--Contains all requests that the players make to join alliances
+CREATE TABLE IF NOT EXISTS joinRequests(
+	joinRequestId INT PRIMARY KEY AUTO_INCREMENT,
+	
+	--the player who made the request
+	playerId INT NOT NULL REFERENCES players(playerId),
+	
+	--the alliance that the player has requested to join
+	allianceId INT NOT NULL REFERENCES alliances(allianceId),
+	
+	--the date that the join request was made
+	requestDate DATETIME NOT NULL
+);
+
 --The permissions each player has within each of their alliances
 --Also represents join requests that players make to an alliance
 CREATE TABLE IF NOT EXISTS permissions(
@@ -62,18 +76,8 @@ CREATE TABLE IF NOT EXISTS permissions(
 	--the alliance
 	allianceId INT NOT NULL REFERENCES alliances(allianceId),
 	
-	/*
-	 * 0 = join request sent
-	 * 1 = request accepted
-	 * 2 = request rejected
-	 */
-	status INT NOT NULL,
-	
-	--the date that the request to join the alliance was made
-	requestDate DATETIME NOT NULL,
-	
-	--the date the request was either accepted or rejected
-	acceptDate DATETIME,
+	--the date the player joined the alliance
+	joinDate DATETIME NOT NULL,
 	
 	--true if the player has permission to submit their fleet info
 	permSubmit TINYINT(1) NOT NULL DEFAULT 0,

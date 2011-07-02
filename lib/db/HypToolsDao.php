@@ -176,87 +176,6 @@ class HypToolsDao{
 	}
 	
 	/**
-	 * Gets the player's permissions
-	 * @param Player $player the player
-	 * @param integer $status (optional) only return permissions of this status
-	 * @param string $orderBy (optional) sort the permissions by this column
-	 * @return Permission the player's permissions
-	 */
-	private function selectPermissions(Player $player, $status = null, $orderBy = null){
-		$sql = "
-		SELECT p.*, a.*, pl.*, a.name AS allianceName, p2.playerId AS presidentId, p2.name AS presidentName, pl.name AS playerName
-		FROM permissions p
-		INNER JOIN players pl ON p.playerId = pl.playerId
-		INNER JOIN alliances a ON p.allianceId = a.allianceId
-		INNER JOIN players p2 ON a.president = p2.playerId
-		WHERE p.playerId = :playerId
-		";
-		if ($status !== null){
-			$sql .= " AND p.status = :status";
-		}
-		if ($orderBy !== null){
-			$sql .= " ORDER BY $orderBy";
-		}
-		$stmt = $this->db->prepare($sql);
-		$stmt->bindValue(":playerId", $player->id, PDO::PARAM_INT);
-		if ($status !== null){
-			$stmt->bindValue(":status", $status, PDO::PARAM_INT);
-		}
-		$stmt->execute();
-		$permissions = array();
-		while ($row = $stmt->fetch()){
-			$permission = new Permission();
-			$permission->id = $row['permissionId'];
-			$permission->status = $row['status'];
-			$permission->requestDate = $this->date($row['requestDate']);
-			$permission->acceptDate = $this->date($row['acceptDate']);
-			$permission->permSubmit = $this->bool($row['permSubmit']);
-			$permission->permView = $this->bool($row['permView']);
-			$permission->permAdmin = $this->bool($row['permAdmin']);
-			
-			$player2 = new Player();
-			$player2->id = $row['playerId'];
-			$player2->name = $row['playerName'];
-			$player2->game = $player->game;
-			$permission->player = $player2;
-			
-			$alliance = new Alliance();
-			$alliance->id = $row['allianceId'];
-			$alliance->tag = $row['tag'];
-			$alliance->name = $row['allianceName'];
-			$alliance->game = $player->game;
-			$permission->alliance = $alliance;
-			
-			$president = new Player();
-			$president->id = $row["presidentId"];
-			$president->name = $row["presidentName"];
-			$president->game = $player->game;
-			$alliance->president = $president;
-			
-			$permissions[] = $permission;
-		}
-		return $permissions;
-	}
-	
-	/**
-	 * Gets all permissions of the alliances that the player has been accepted into.
-	 * @param $player the player
-	 * @return array(Permission) the permissions
-	 */
-	public function selectAcceptedPermissions($player){
-		return $this->selectPermissions($player, Permission::STATUS_ACCEPTED, "a.tag");
-	}
-	
-	/**
-	 * Gets the permissions of all pending alliance requests.
-	 * @param $player the player
-	 * @return array(Permission) the permissions
-	 */
-	public function selectPendingPermissions($player){
-		return $this->selectPermissions($player, Permission::STATUS_REQUESTED, "p.requestDate DESC");
-	}
-	
-	/**
 	 * Determines whether an alliance exists or not.
 	 * @param string $tag the alliance tag
 	 * @return boolean true if the alliance exists, false if not
@@ -313,23 +232,181 @@ class HypToolsDao{
 	}
 	
 	/**
-	 * Determines if a player has either (1) requested to join an alliance or (2) has already been accepted into an alliance.
+	 * Determines if a player has made a request to join an alliance.
 	 * @param Player $player the player
 	 * @param Alliance $alliance the alliance
-	 * @return boolean true if the player has requested or is part of the alliance, false if not
+	 * @return boolean true if the player has requested to join the alliance
 	 */
-	public function selectAlreadyRequested(Player $player, Alliance $alliance){
+	public function hasPlayerMadeJoinRequest(Player $player, Alliance $alliance){
 		$sql = "
-		SELECT Count(*) FROM permissions
+		SELECT Count(*) FROM joinRequests
 		WHERE playerId = :playerId
 		AND allianceId = :allianceId
-		AND (status = :pending OR status = :accepted)
 		";
 		$stmt = $this->db->prepare($sql);
 		$stmt->bindValue(":playerId", $player->id, PDO::PARAM_INT);
 		$stmt->bindValue(":allianceId", $alliance->id, PDO::PARAM_INT);
-		$stmt->bindValue(":pending", Permission::STATUS_REQUESTED, PDO::PARAM_INT);
-		$stmt->bindValue(":accepted", Permission::STATUS_ACCEPTED, PDO::PARAM_INT);
+		$stmt->execute();
+		$row = $stmt->fetch();
+		return $row[0] > 0;
+	}
+	
+	/**
+	 * Gets the player's join requests
+	 * @param Player $player the player
+	 * @param string $orderBy (optional) sort the permissions by this column
+	 * @return array(JoinRequest) the player's join requests
+	 */
+	public function selectJoinRequestsByPlayer(Player $player, $orderBy = null){
+		$joinRequests = array();
+		
+		$sql = "
+		SELECT j.*,
+		a.*, a.name AS allianceName,
+		p.*, p.name AS playerName,
+		p2.*, p2.playerId AS presidentId, p2.name AS presidentName, p2.lastLoginDate AS presidentLastLoginDate, p2.lastLoginIP AS presidentLastLoginIP,
+		g.*, g.name AS gameName, g.description AS gameDescription
+		FROM joinRequests j
+		INNER JOIN alliances a ON j.allianceID = a.allianceID
+		INNER JOIN players p ON j.playerId = p.playerId
+		INNER JOIN players p2 ON a.president = p2.playerId
+		INNER JOIN games g ON p.gameId = g.gameId
+		WHERE j.playerId = :playerId
+		";
+		if ($orderBy !== null){
+			$sql .= " ORDER BY $orderBy";
+		}
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindValue(":playerId", $player->id, PDO::PARAM_INT);
+		$stmt->execute();
+		while ($row = $stmt->fetch()){
+			$joinRequest = new JoinRequest();
+			$joinRequest->id = $row['joinRequestId'];
+			$joinRequest->requestDate = $this->date($row['requestDate']);
+			
+			$game = new Game();
+			$game->id = $row['gameId'];
+			$game->name = $row['gameName'];
+			$game->description = $row['gameDescription'];
+			
+			$player = new Player();
+			$player->id = $row['playerId'];
+			$player->name = $row['playerName'];
+			$player->lastLoginDate = $this->date($row['lastLoginDate']);
+			$player->lastLoginIP = $row['lastLoginIP'];
+			$player->game = $game;
+			$joinRequest->player = $player;
+			
+			$president = new Player();
+			$president->id = $row['presidentId'];
+			$president->name = $row['presidentName'];
+			$president->lastLoginDate = $this->date($row['presidentLastLoginDate']);
+			$president->lastLoginIP = $row['presidentLastLoginIP'];
+			$president->game = $game;
+			
+			$alliance = new Alliance();
+			$alliance->id = $row['allianceId'];
+			$alliance->name = $row['allianceName'];
+			$alliance->description = $row['allianceDescription'];
+			$alliance->tag = $row['tag'];
+			$alliance->registeredDate = $this->date($row['registeredDate']);
+			$alliance->motd = $row['motd'];
+			$alliance->game = $game;
+			$alliance->president = $president;
+			$joinRequest->alliance = $alliance;
+			
+			$joinRequests[] = $joinRequest;
+		}
+		
+		return $joinRequests;
+	}
+	
+	/**
+	 * Gets the player's permissions
+	 * @param Player $player the player
+	 * @param string $orderBy (optional) sort the permissions by this column
+	 * @return array(Permission) the player's permissions
+	 */
+	public function selectPermissionsByPlayer(Player $player, $orderBy = null){
+		$sql = "
+		SELECT p.*,
+		a.*, a.name AS allianceName,
+		pl.*, pl.name AS playerName,
+		pl2.playerId AS presidentId, pl2.name AS presidentName, pl2.lastLoginDate AS presidentLastLoginDate, pl2.lastLoginIP AS presidentLastLoginIP,
+		g.*, g.name AS gameName, g.description AS gameDescription
+		FROM permissions p
+		INNER JOIN players pl ON p.playerId = pl.playerId
+		INNER JOIN games g ON g.gameID = pl.gameId
+		INNER JOIN alliances a ON p.allianceId = a.allianceId
+		INNER JOIN players pl2 ON a.president = pl2.playerId
+		WHERE p.playerId = :playerId
+		";
+		if ($orderBy !== null){
+			$sql .= " ORDER BY $orderBy";
+		}
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindValue(":playerId", $player->id, PDO::PARAM_INT);
+		$stmt->execute();
+		$permissions = array();
+		while ($row = $stmt->fetch()){
+			$permission = new Permission();
+			$permission->id = $row['permissionId'];
+			$permission->joinDate = $this->date($row['joinDate']);
+			$permission->permSubmit = $this->bool($row['permSubmit']);
+			$permission->permView = $this->bool($row['permView']);
+			$permission->permAdmin = $this->bool($row['permAdmin']);
+			
+			$game = new Game();
+			$game->id = $row['gameId'];
+			$game->name = $row['gameName'];
+			$game->description = $row['gameDescription'];
+			
+			$player = new Player();
+			$player->id = $row['playerId'];
+			$player->name = $row['playerName'];
+			$player->lastLoginDate = $this->date($row['lastLoginDate']);
+			$player->lastLoginIP = $row['lastLoginIP'];
+			$player->game = $game;
+			$permission->player = $player;
+			
+			$president = new Player();
+			$president->id = $row['presidentId'];
+			$president->name = $row['presidentName'];
+			$president->lastLoginDate = $this->date($row['presidentLastLoginDate']);
+			$president->lastLoginIP = $row['presidentLastLoginIP'];
+			$president->game = $game;
+			
+			$alliance = new Alliance();
+			$alliance->id = $row['allianceId'];
+			$alliance->name = $row['allianceName'];
+			$alliance->description = $row['allianceDescription'];
+			$alliance->tag = $row['tag'];
+			$alliance->registeredDate = $this->date($row['registeredDate']);
+			$alliance->motd = $row['motd'];
+			$alliance->game = $game;
+			$alliance->president = $president;
+			$permission->alliance = $alliance;
+
+			$permissions[] = $permission;
+		}
+		return $permissions;
+	}
+	
+	/**
+	 * Determines if a player belongs to an alliance.
+	 * @param Player $player the player
+	 * @param Alliance $alliance the alliance
+	 * @return boolean true if the player belongs to the alliance
+	 */
+	public function doesPlayerBelongToAlliance(Player $player, Alliance $alliance){
+		$sql = "
+		SELECT Count(*) FROM permissions
+		WHERE playerId = :playerId
+		AND allianceId = :allianceId
+		";
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindValue(":playerId", $player->id, PDO::PARAM_INT);
+		$stmt->bindValue(":allianceId", $alliance->id, PDO::PARAM_INT);
 		$stmt->execute();
 		$row = $stmt->fetch();
 		return $row[0] > 0;
@@ -340,16 +417,15 @@ class HypToolsDao{
 	 * @param Player $player the player
 	 * @param string $tag the alliance tag
 	 */
-	public function insertAllianceJoinRequest(Player $player, Alliance $alliance){
+	public function insertJoinRequest(Player $player, Alliance $alliance){
 		$sql = "
-		INSERT INTO permissions
-		( playerId,  allianceId,  status, requestDate, permSubmit, permView, permAdmin) VALUES
-		(:playerId, :allianceId, :status, Now(),       0,          0,        0)
+		INSERT INTO joinRequests
+		( playerId,  allianceId, requestDate) VALUES
+		(:playerId, :allianceId, Now())
 		";
 		$stmt = $this->db->prepare($sql);
 		$stmt->bindValue(":playerId", $player->id, PDO::PARAM_INT);
 		$stmt->bindValue(":allianceId", $alliance->id, PDO::PARAM_INT);
-		$stmt->bindValue(":status", Permission::STATUS_REQUESTED, PDO::PARAM_INT);
 		$stmt->execute();
 	}
 	
@@ -361,13 +437,12 @@ class HypToolsDao{
 	public function insertPresidentPermission(Player $president, Alliance $alliance){
 		$sql = "
 		INSERT INTO permissions
-		( playerId,  allianceId,  status, requestDate, acceptDate, permSubmit, permView, permAdmin) VALUES
-		(:playerId, :allianceId, :status, Now(),       Now(),      1,          1,        1)
+		( playerId,  allianceId, joinDate, permSubmit, permView, permAdmin) VALUES
+		(:playerId, :allianceId, Now(),    1,          1,        1)
 		";
 		$stmt = $this->db->prepare($sql);
 		$stmt->bindValue(":playerId", $president->id, PDO::PARAM_INT);
 		$stmt->bindValue(":allianceId", $alliance->id, PDO::PARAM_INT);
-		$stmt->bindValue(":status", Permission::STATUS_ACCEPTED, PDO::PARAM_INT);
 		$stmt->execute();
 		
 		$sql = "UPDATE alliances SET registeredDate = Now() WHERE allianceId = :allianceId";
@@ -384,7 +459,7 @@ class HypToolsDao{
 	 * @param string $tag the alliance's tag
 	 * @return Alliance the alliance
 	 */
-	public function selectAlliance($tag){
+	public function selectAllianceByTag($tag){
 		$alliance = null;
 		
 		$sql = "
@@ -424,9 +499,9 @@ class HypToolsDao{
 	public function dropAllTables(){
 		$this->beginTransaction();
 		try{
-			$tables = array("permissions", "alliances", "players", "games");
+			$tables = array("permissions", "joinRequests", "alliances", "players", "games");
 			foreach ($tables as $t){
-				$this->db->exec("DROP TABLE $t");
+				$this->db->exec("DROP TABLE IF EXISTS $t");
 			}
 			$this->commit();
 		} catch (Exception $e){

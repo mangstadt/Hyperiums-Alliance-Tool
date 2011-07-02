@@ -21,21 +21,25 @@ $joinTagSuccess = null;
 if ($joinTag !== null){
 	$joinTag = trim(trim($joinTag), "]["); //remove brackets
 	if ($joinTag != ""){
-		$alliance = $dao->selectAlliance($joinTag);
+		$alliance = $dao->selectAllianceByTag($joinTag);
 		if ($alliance != null){
-			$requested = $dao->selectAlreadyRequested($player, $alliance);
-			if ($requested){
-				$joinTagError = "You already sent a request or already belong to the alliance.";
+			if ($dao->hasPlayerMadeJoinRequest($player, $alliance)){
+				$joinTagError = "You already sent a request to join the alliance.";
 			} else {
-				if ($player->id == $alliance->president->id){
-					//the user is the president of the alliance, give him full access
-					$dao->insertPresidentPermission($player, $alliance);
-					$joinTagSuccess = "Hello Mr. President.";
-				} else {
-					$dao->insertAllianceJoinRequest($player, $alliance);
-					$joinTagSuccess = "Join request sent.";
+				if ($dao->doesPlayerBelongToAlliance($player, $alliance)){
+					$joinTagError = "You already belong to the alliance.";
 				}
-				$joinTag = "";
+				else {
+					if ($player->id == $alliance->president->id){
+						//the user is the president of the alliance, give him full access
+						$dao->insertPresidentPermission($player, $alliance);
+						$joinTagSuccess = "Hello Mr. President.";
+					} else {
+						$dao->insertJoinRequest($player, $alliance);
+						$joinTagSuccess = "Join request sent.";
+					}
+					$joinTag = "";
+				}
 			}
 		} else {
 			$joinTagError = "Alliance does not exist.";
@@ -45,11 +49,11 @@ if ($joinTag !== null){
 	}
 }
 
-//the alliances the player belongs to
-$accepted = $dao->selectAcceptedPermissions($player);
+//get the player's pending join requests
+$playerJoinRequests = $dao->selectJoinRequestsByPlayer($player);
 
-//the pending alliance requests
-$pendingRequests = $dao->selectPendingPermissions($player);
+//get the alliances the player belongs to
+$playerAlliances = $dao->selectPermissionsByPlayer($player);
 
 ?>
 <!DOCTYPE html>
@@ -81,10 +85,10 @@ $pendingRequests = $dao->selectPendingPermissions($player);
 				<form method="post" action="home.php">
 					Alliances: 
 					<?php
-					if (count($accepted) == 0):
+					if (count($playerAlliances) == 0):
 						?><i>none</i><?php
 					else:
-						foreach ($accepted as $a):
+						foreach ($playerAlliances as $a):
 							?><a href="alliance.php?id=<?php echo urlencode($a->alliance->id) ?>">[<?php echo htmlspecialchars($a->alliance->tag) ?>]</a><?php
 						endforeach;
 					endif;
@@ -102,10 +106,10 @@ $pendingRequests = $dao->selectPendingPermissions($player);
 				</form>
 				<br /><a href="logout.php">Logout</a><br /><br />
 				<?php
-				if (count($pendingRequests) > 0):
+				if (count($playerJoinRequests) > 0):
 					?><div><b><i>Pending join requests:</i></b><br /><?php
-					foreach ($pendingRequests as $p):
-						?><b><?php echo htmlspecialchars($p->alliance->tag)?></b> - requested on <?php echo htmlspecialchars($p->requestDate->format("Y-m-d G:i T"))?>.<br /><?php
+					foreach ($playerJoinRequests as $r):
+						?><b><?php echo htmlspecialchars($r->alliance->tag)?></b> - requested on <?php echo htmlspecialchars($r->requestDate->format("Y-m-d G:i T"))?>.<br /><?php
 					endforeach;
 					?></div><?php
 				endif;
