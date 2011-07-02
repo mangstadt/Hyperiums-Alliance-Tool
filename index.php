@@ -1,7 +1,6 @@
 <?php
 	require_once 'lib/bootstrap.php';
 	
-	var_dump(@$_GET["page"]);
 	error_reporting(E_ERROR) ;
 
 	use HAPI\HAPI;
@@ -11,6 +10,8 @@
 	$loggedOut = isset($_GET["loggedout"]);
 	
 	$games = HAPI::getAllGames();
+	
+	$mock = isset($_REQUEST['mock']);
 	
 	$errors = array();
 	if (count($_POST) > 0){
@@ -29,7 +30,7 @@
 		if (count($errors) == 0){
 			try{
 				//authenticate with Hyperiums
-				$hapi = new HAPI($game_select, $login, $hkey);
+				$hapi = $mock ? "hapi" : new HAPI($game_select, $login, $hkey);
 				session_start();
 				$_SESSION['hapi'] = $hapi;
 				
@@ -52,7 +53,8 @@
 				$dao->setGame($game);
 				
 				//get player info from database
-				$player = $dao->selsertPlayer($hapi->getSession()->getPlayerName());
+				$playerName = $mock ? $login : $hapi->getSession()->getPlayerName();
+				$player = $dao->selsertPlayer($playerName);
 				$dao->updatePlayerLastLogin($player);
 				$_SESSION['player'] = $player;
 				
@@ -114,7 +116,17 @@
 								?></div><?php
 							endif
 							?>
+							<?php
+							if ($mock):
+								?><div style="color:yellow">Mock mode engaged</div><?php
+							endif;
+							?>
 							<form id="loginForm" method="POST" action="index.php">
+								<?php
+								if ($mock):
+									?><input type="hidden" name="mock" value="1" /><?php
+								endif;
+								?>
 								<label for="game_select_input">Game Selection</label>
 								<select name="game_select_input">
 									<?php
