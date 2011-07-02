@@ -79,12 +79,11 @@ CREATE TABLE IF NOT EXISTS permissions(
 	--the date the player joined the alliance
 	joinDate DATETIME NOT NULL,
 	
-	--true if the player has permission to submit their fleet info
-	permSubmit TINYINT(1) NOT NULL DEFAULT 0,
-	
-	--true if the player has permission to view the entire alliance's fleet info
-	permView TINYINT(1) NOT NULL DEFAULT 0,
-	
-	--true if the player has permission to accept players into their alliance (through our tool--the assumption is that the player is already a member of the alliance) and to set each player's permissions
-	permAdmin TINYINT(1) NOT NULL DEFAULT 0
+	/* 
+	bitmask representing the priviledges the player has in this alliance
+	1 = submit - can submit fleet, trading, infil info
+	2 = view - can view alliance members' fleet, trading, infil info
+	4 = admin - can approve auth requests and set member permissions
+	*/
+	perms INT NOT NULL DEFAULT 0
 );

@@ -11,6 +11,24 @@ use \Exception;
  */
 class HypToolsDao{
 	/**
+	 * Gives a player submit permissions in an alliance.
+	 * @var integer
+	 */
+	const PERMS_SUBMIT = 1;
+	
+	/**
+	 * Gives a player view permissions in an alliance.
+	 * @var integer
+	 */
+	const PERMS_VIEW = 2;
+	
+	/**
+	 * Gives a player admin permissions in an alliance.
+	 * @var integer
+	 */
+	const PERMS_ADMIN = 4;
+	
+	/**
 	 * The database connection
 	 * @var PDO
 	 */
@@ -351,9 +369,10 @@ class HypToolsDao{
 			$permission = new Permission();
 			$permission->id = $row['permissionId'];
 			$permission->joinDate = $this->date($row['joinDate']);
-			$permission->permSubmit = $this->bool($row['permSubmit']);
-			$permission->permView = $this->bool($row['permView']);
-			$permission->permAdmin = $this->bool($row['permAdmin']);
+			$perms = $row['perms'];
+			$permission->permSubmit = $this->bitmask($perms, self::PERMS_SUBMIT);
+			$permission->permView = $this->bitmask($perms, self::PERMS_VIEW);
+			$permission->permAdmin = $this->bitmask($perms, self::PERMS_ADMIN);
 			
 			$game = new Game();
 			$game->id = $row['gameId'];
@@ -433,12 +452,13 @@ class HypToolsDao{
 	public function insertPresidentPermission(Player $president, Alliance $alliance){
 		$sql = "
 		INSERT INTO permissions
-		( playerId,  allianceId, joinDate, permSubmit, permView, permAdmin) VALUES
-		(:playerId, :allianceId, Now(),    1,          1,        1)
+		( playerId,  allianceId,  perms, joinDate) VALUES
+		(:playerId, :allianceId, :perms, Now())
 		";
 		$stmt = $this->db->prepare($sql);
 		$stmt->bindValue(":playerId", $president->id, PDO::PARAM_INT);
 		$stmt->bindValue(":allianceId", $alliance->id, PDO::PARAM_INT);
+		$stmt->bindValue(":perms", self::PERMS_SUBMIT | self::PERMS_VIEW | self::PERMS_ADMIN, PDO::PARAM_INT);
 		$stmt->execute();
 		
 		$sql = "UPDATE alliances SET registeredDate = Now() WHERE allianceId = :allianceId";
@@ -566,5 +586,15 @@ class HypToolsDao{
 			return null;
 		}
 		return new DateTime($value);
+	}
+	
+	/**
+	 * Determines if a bitmask has a particular bit value.
+	 * @param integer $haystack the bitmask
+	 * @param integer $needle the bit to look for
+	 * @return boolean true if the bitmask has the bit, false if not
+	 */
+	private function bitmask($haystack, $needle){
+		return ($haystack & $needle) == $needle;	
 	}
 }
