@@ -77,4 +77,7 @@ foreach ($dataFiles as $dataFile){
 		throw $e;
 	}
 	echo "Processed $num alliances in file \"$file\".\n";
+	flush();
 }
+
+echo "Done.";
