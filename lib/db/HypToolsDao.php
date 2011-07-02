@@ -27,21 +27,8 @@ class HypToolsDao{
 	 * @param Game $game (optional) the game the player is logged into
 	 */
 	public function __construct(Game $game = null){
-		if (isset($_SERVER['db_host'])){
-			//we are on pagodabox
-			$host = $_SERVER['db_host']; //localhost:/tmp/mysql/daniela.sock
-			$name = $_SERVER['db_name']; //daniela
-			$user = $_SERVER['db_user']; //melita
-			$pass = $_SERVER['db_pass'];
-			
-			$host = substr($host, strpos($host, ":")+1);
-			$this->db = new PDO("mysql:unix_socket=$host;dbname=$name", $user, $pass);
-		} else {
-			//we are on my local workstation
-			$this->db = new PDO("mysql:unix_socket=/tmp/mysql.sock", "root", "root");
-			$this->db->exec("CREATE DATABASE IF NOT EXISTS hypTools");
-			$this->db->exec("USE hypTools");
-		}
+		include __DIR__ . '/db.php';
+		$this->db = $db;
 		
 		//throw exception when a database error occurs instead of just returning "false"
 		$this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
