@@ -9,6 +9,12 @@ class Player{
 	public $id;
 	
 	/**
+	 * The Hyperiums player ID
+	 * @var integer
+	 */
+	public $hypPlayerId;
+	
+	/**
 	 * The game this player belongs to.
 	 * @var Game
 	 */

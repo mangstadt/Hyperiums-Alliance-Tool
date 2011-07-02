@@ -18,6 +18,9 @@ CREATE TABLE IF NOT EXISTS players(
 	--the game that this player belongs to
 	gameId INT NOT NULL REFERENCES games(gameId),
 	
+	--The Hyperiums player ID
+	hypPlayerId INT NOT NULL,
+	
 	--the player's name
 	name VARCHAR(50) NOT NULL,
 	

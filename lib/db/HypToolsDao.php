@@ -102,40 +102,51 @@ class HypToolsDao{
 	
 	/**
 	 * Selects a player from the database or creates a new row if one doesn't exist.
+	 * @param integer $hypPlayerId the Hyperiums player ID
 	 * @param string $name the player name
 	 * @return Player the player
 	 */
-	public function selsertPlayer($name){
+	public function upsertPlayer($hypPlayerId, $name){
 		$player = new Player();
 		$player->game = $this->game;
+		$player->name = $name;
+		$player->hypPlayerId = $hypPlayerId;
 		
 		$sql = "
-		SELECT * FROM players
-		WHERE Ucase(name) = :name
+		SELECT playerId FROM players
+		WHERE hypPlayerId = :hypPlayerId
 		AND gameId = :gameId
 		";
 		$stmt = $this->db->prepare($sql);
-		$stmt->bindValue(":name", strtoupper($name), PDO::PARAM_STR);
+		$stmt->bindValue(":hypPlayerId", $hypPlayerId, PDO::PARAM_INT);
 		$stmt->bindValue(":gameId", $this->game->id, PDO::PARAM_INT);
 		$stmt->execute();
 		if ($row = $stmt->fetch()){
-			$player->id = $row['playerId'];
-			$player->name = $row['name'];
-			$player->lastLoginDate = $this->date($row['lastLoginDate']);
-			$player->lastLoginIP = $row['lastLoginIP'];
-		} else {
+			$id = $row[0];
+			$player->id = $id;
+			
 			$sql = "
-			INSERT INTO players
-			( name,  gameId, lastLoginDate, lastLoginIP) VALUES
-			(:name, :gameId, NULL,          NULL)
+			UPDATE players
+			SET name = :name
+			WHERE playerId = :playerId
 			";
 			$stmt = $this->db->prepare($sql);
 			$stmt->bindValue(":name", $name, PDO::PARAM_STR);
+			$stmt->bindValue(":playerId", $id, PDO::PARAM_INT);
+			$stmt->execute();
+		} else {
+			$sql = "
+			INSERT INTO players
+			( name,  hypPlayerId,  gameId, lastLoginDate, lastLoginIP) VALUES
+			(:name, :hypPlayerId, :gameId, NULL,          NULL)
+			";
+			$stmt = $this->db->prepare($sql);
+			$stmt->bindValue(":name", $name, PDO::PARAM_STR);
+			$stmt->bindValue(":hypPlayerId", $hypPlayerId, PDO::PARAM_INT);
 			$stmt->bindValue(":gameId", $this->game->id, PDO::PARAM_INT);
 			$stmt->execute();
 			
 			$player->id = $this->db->lastInsertId();
-			$player->name = $name;
 		}
 		
 		return $player;
