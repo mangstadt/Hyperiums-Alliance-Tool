@@ -134,9 +134,7 @@ class HypToolsDao{
 		if ($row = $stmt->fetch()){
 			$player->id = $row['playerId'];
 			$player->name = $row['name'];
-			if ($row['lastLoginDate'] != null){
-				$player->lastLoginDate = new DateTime($row['lastLoginDate']);
-			}
+			$player->lastLoginDate = $this->date($row['lastLoginDate']);
 			$player->lastLoginIP = $row['lastLoginIP'];
 		} else {
 			$sql = "
@@ -210,11 +208,8 @@ class HypToolsDao{
 			$permission = new Permission();
 			$permission->id = $row['permissionId'];
 			$permission->status = $row['status'];
-			$permission->requestDate = new DateTime($row['requestDate']);
-			$acceptDate = $row['acceptDate'];
-			if ($acceptDate != null){
-				$permission->acceptDate = new DateTime($acceptDate);
-			}
+			$permission->requestDate = $this->date($row['requestDate']);
+			$permission->acceptDate = $this->date($row['acceptDate']);
 			$permission->permSubmit = $this->bool($row['permSubmit']);
 			$permission->permView = $this->bool($row['permView']);
 			$permission->permAdmin = $this->bool($row['permAdmin']);
@@ -407,19 +402,14 @@ class HypToolsDao{
 			$alliance->id = $row['allianceId'];
 			$alliance->tag = $row['tag'];
 			$alliance->name = $row['name'];
-			if ($row['registeredDate'] != null){
-				$alliance->registeredDate = new DateTime($row['registeredDate']);
-			}
+			$alliance->registeredDate = $this->date($row['registeredDate']);
 			$alliance->motd = $row['motd'];
 			$alliance->game = $this->game;
 			
 			$president = new Player();
 			$president->id = $row["playerId"];
 			$president->name = $row["playerName"];
-			$date = $row["lastLoginDate"];
-			if ($date != null){
-				$president->lastLoginDate = new DateTime($date);
-			}
+			$president->lastLoginDate = $this->date($row["lastLoginDate"]);
 			$president->lastLoginIP = $row["lastLoginIP"];
 			$president->game = $this->game;
 			$alliance->president = $president;
@@ -494,5 +484,17 @@ class HypToolsDao{
 	 */
 	private function bool($value){
 		return $value != 0;
+	}
+	
+	/**
+	 * Gets the value of a date column.
+	 * @param mixed $value the column value
+	 * @return DateTime the date or null if the column value is null
+	 */
+	private function date($value){
+		if ($value == null){
+			return null;
+		}
+		return new DateTime($value);
 	}
 }
