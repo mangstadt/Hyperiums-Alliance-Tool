@@ -16,8 +16,6 @@ $dao = new HypToolsDao($player->game);
 
 //user has requested to join an alliance
 $joinTag = @$_POST["joinTag"];
-$joinTagError = null;
-$joinTagSuccess = null;
 if ($joinTag !== null){
 	$joinTag = trim(trim($joinTag), "]["); //remove brackets
 	if ($joinTag != ""){
@@ -42,7 +40,7 @@ if ($joinTag !== null){
 				}
 			}
 		} else {
-			$joinTagError = "Alliance does not exist.";
+			$joinTagError = "Alliance <b>[$joinTag]</b> does not exist.";
 		}
 	} else {
 		$joinTagError = "Invalid tag.";
@@ -82,38 +80,64 @@ $playerAlliances = $dao->selectPermissionsByPlayer($player);
 			</div>
 			
 			<div id="content" style="color:white">
-				<form method="post" action="home.php">
+			
+				<div>
+					<a href="home.php">Home</a>
+					<a href="logout.php">Logout</a>
+				</div>
+				
+				<div style="border-bottom:3px solid #fff; padding-bottom:5px">
 					Alliances: 
 					<?php
 					if (count($playerAlliances) == 0):
 						?><i>none</i><?php
 					else:
 						foreach ($playerAlliances as $a):
-							?><a href="alliance.php?id=<?php echo urlencode($a->alliance->id) ?>">[<?php echo htmlspecialchars($a->alliance->tag) ?>]</a><?php
+							?><a href="alliance.php?tag=<?php echo urlencode($a->alliance->tag) ?>">[<?php echo htmlspecialchars($a->alliance->tag) ?>]</a><?php
 						endforeach;
 					endif;
 					?>
-					| join:
-					<input type="text" name="joinTag" size="5" value="<?php echo htmlspecialchars($joinTag)?>" />
-					<input type="submit" value="Send" />
-					<?php
-					if ($joinTagError != null):
-						?><font color="red"><?php echo htmlspecialchars($joinTagError)?></font><?php
-					elseif ($joinTagSuccess != null):
-						?><b><?php echo htmlspecialchars($joinTagSuccess)?></b><?php
-					endif;
-					?>
-				</form>
-				<br /><a href="logout.php">Logout</a><br /><br />
-				<?php
-				if (count($playerJoinRequests) > 0):
-					?><div><b><i>Pending join requests:</i></b><br /><?php
-					foreach ($playerJoinRequests as $r):
-						?><b><?php echo htmlspecialchars($r->alliance->tag)?></b> - requested on <?php echo htmlspecialchars($r->requestDate->format("Y-m-d G:i T"))?>.<br /><?php
-					endforeach;
-					?></div><?php
-				endif;
-				?>
+				</div>
+				
+				<div class="block">
+					<h1>Alliance Authentication</h1>
+					<div>
+						<p>Authenticate with your alliance to begin submitting your fleet, trading, and infiltration data.
+						Note that authentication requires approval from the alliance president.
+						Alliance presidents are automatically approved.</p>
+						
+						<form action="home.php" method="post">
+							<b>Tag:</b> <input type="text" name="joinTag" value="<?php echo isset($joinTagSuccess) ? '' : htmlspecialchars($joinTag)?>"/>
+							<input type="submit" value="Send Auth Request" class="button" />
+							<?php
+							if (isset($joinTagError)):
+								echo "<span style=\"color:red\"><b>$joinTagError</b></span>";
+							elseif (isset($joinTagSuccess)):
+								echo "<b>$joinTagSuccess</b>";
+							endif;
+							?>
+						</form>
+						
+						<?php
+						if (count($playerJoinRequests) > 0):
+							?>
+							<h2>Pending Requests:</h2>
+							<table>
+							<?php
+							foreach ($playerJoinRequests as $r):
+								?>
+								<tr>
+									<td>[<b><?php echo htmlspecialchars($r->alliance->tag)?></b>] - requested on <?php echo htmlspecialchars($r->requestDate->format("Y-m-d G:i T"))?>.</td>
+								</tr>
+								<?php
+							endforeach;
+							?>
+							</table>
+							<?php
+						endif;
+						?>
+					</div>
+				</div>
 			</div>
 			
 		</div>
