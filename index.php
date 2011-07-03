@@ -53,7 +53,7 @@
 				$dao->setGame($game);
 				
 				//get player info from database
-				$playerId = $mock ? 1 : $hapi->getSession()->getPlayerId();
+				$playerId = $mock ? null : $hapi->getSession()->getPlayerId();
 				$playerName = $mock ? $login : $hapi->getSession()->getPlayerName();
 				$player = $dao->upsertPlayer($playerName, $playerId);
 				$dao->updatePlayerLastLogin($player);
