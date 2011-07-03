@@ -32,9 +32,6 @@ if ($cancelJoinRequest !== null){
 	}
 }
 
-//get notifications
-$joinLogs = $dao->selectJoinLogsByPlayer($player);
-
 //user has requested to join an alliance
 $joinTag = @$_POST["joinTag"];
 if ($joinTag !== null){
@@ -83,6 +80,9 @@ if ($joinTag !== null){
 		$joinTagError = "Invalid tag.";
 	}
 }
+
+//get notifications
+$joinLogs = $dao->selectJoinLogsByPlayer($player);
 
 //get the player's pending join requests
 $playerJoinRequests = $dao->selectJoinRequestsByPlayer($player);
@@ -153,6 +153,12 @@ $playerAlliances = $dao->selectPermissionsByPlayer($player);
 								$new = false;
 								$description = null;
 								switch($joinLog->event):
+									case JoinLog::EVENT_REQUESTED:
+										$description = "You have sent an authentication request to the <b>[" . htmlspecialchars($joinLog->alliance->tag) . "]</b> alliance.";
+										 break;
+									case JoinLog::EVENT_CANCELLED:
+										$description = "You have cancelled your authentication request to the <b>[" . htmlspecialchars($joinLog->alliance->tag) . "]</b> alliance.";
+										break;
 									case JoinLog::EVENT_ACCEPTED:
 										$description = "Your authentication request to the <b>[" . htmlspecialchars($joinLog->alliance->tag) . "]</b> alliance has been approved.";
 										break;
