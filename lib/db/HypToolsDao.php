@@ -272,18 +272,20 @@ class HypToolsDao{
 	}
 	
 	/**
-	 * Gets the player's join requests
-	 * @param Player $player the player
-	 * @param string $orderBy (optional) sort the permissions by this column
-	 * @return array(JoinRequest) the player's join requests
+	 * Gets a list of join requests.
+	 * @param string $column the name of the column to include in the "WHERE" clause
+	 * @param string $value the value of the column in the "WHERE" clause
+	 * @param integer $pdoType the PDO type of the column
+	 * @param string $orderBy (optional) the ORDER BY clause
+	 * @return array(JoinRequest) the join requests
 	 */
-	public function selectJoinRequestsByPlayer(Player $player, $orderBy = null){
+	private function selectJoinRequests($column, $value, $pdoType, $orderBy = null){
 		$joinRequests = array();
 		
 		$sql = "
 		SELECT j.*,
 		a.*, a.name AS allianceName,
-		p.*, p.name AS playerName,
+		p.*, p.playerId AS thePlayerId, p.name AS playerName,
 		p2.*, p2.playerId AS presidentId, p2.name AS presidentName, p2.lastLoginDate AS presidentLastLoginDate,
 		g.*, g.name AS gameName, g.description AS gameDescription
 		FROM joinRequests j
@@ -291,13 +293,13 @@ class HypToolsDao{
 		INNER JOIN players p ON j.playerId = p.playerId
 		INNER JOIN players p2 ON a.president = p2.playerId
 		INNER JOIN games g ON p.gameId = g.gameId
-		WHERE j.playerId = :playerId
+		WHERE j.$column = :$column
 		";
 		if ($orderBy !== null){
 			$sql .= " ORDER BY $orderBy";
 		}
 		$stmt = $this->db->prepare($sql);
-		$stmt->bindValue(":playerId", $player->id, PDO::PARAM_INT);
+		$stmt->bindValue(":$column", $value, $pdoType);
 		$stmt->execute();
 		while ($row = $stmt->fetch()){
 			$joinRequest = new JoinRequest();
@@ -310,7 +312,7 @@ class HypToolsDao{
 			$game->description = $row['gameDescription'];
 			
 			$player = new Player();
-			$player->id = $row['playerId'];
+			$player->id = $row['thePlayerId'];
 			$player->name = $row['playerName'];
 			$player->lastLoginDate = $this->date($row['lastLoginDate']);
 			$player->game = $game;
@@ -336,6 +338,39 @@ class HypToolsDao{
 		}
 		
 		return $joinRequests;
+	}
+	
+	/**
+	 * Gets the player's join requests
+	 * @param Player $player the player
+	 * @return array(JoinRequest) the player's join requests
+	 */
+	public function selectJoinRequestsByPlayer(Player $player){
+		return $this->selectJoinRequests("playerId", $player->id, PDO::PARAM_INT, "j.requestDate DESC");
+	}
+	
+	/**
+	 * Gets a join request.
+	 * @param integer $id the join request ID
+	 * @return JoinRequest the join request or null if not found
+	 */
+	public function selectJoinRequestById($id){
+		$ret = $this->selectJoinRequests("joinRequestId", $id, PDO::PARAM_INT);
+		if (count($ret) == 1){
+			return $ret[0];
+		}
+		return null;
+	}
+	
+	/**
+	 * Deletes a join request.
+	 * @param integer $id the join request ID
+	 */
+	public function deleteJoinRequest($id){
+		$sql = "DELETE FROM joinRequests WHERE joinRequestId = :joinRequestId";
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindValue(":joinRequestId", $id, PDO::PARAM_INT);
+		$stmt->execute();
 	}
 	
 	/**

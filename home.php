@@ -14,6 +14,15 @@ $player = $_SESSION['player'];
 
 $dao = new HypToolsDao($player->game);
 
+//user has requested to cancel a pending join request
+$cancelJoinRequest = @$_POST['cancelJoinRequest'];
+if ($cancelJoinRequest !== null){
+	$joinRequest = $dao->selectJoinRequestById($cancelJoinRequest);
+	if ($joinRequest != null && $joinRequest->player->id == $player->id){
+		$dao->deleteJoinRequest($joinRequest->id);
+	}
+}
+
 //user has requested to join an alliance
 $joinTag = @$_POST["joinTag"];
 if ($joinTag !== null){
@@ -22,10 +31,10 @@ if ($joinTag !== null){
 		$alliance = $dao->selectAllianceByTag($joinTag);
 		if ($alliance != null){
 			if ($dao->hasPlayerMadeJoinRequest($player, $alliance)){
-				$joinTagError = "You already sent a request to join the alliance.";
+				$joinTagError = "You already sent an authentication request to join the [{$alliance->tag}] alliance.";
 			} else {
 				if ($dao->doesPlayerBelongToAlliance($player, $alliance)){
-					$joinTagError = "You already belong to the alliance.";
+					$joinTagError = "You already belong to the [{$alliance->tag}] alliance.";
 				}
 				else {
 					if ($player->id == $alliance->president->id){
@@ -34,7 +43,7 @@ if ($joinTag !== null){
 						$joinTagSuccess = "Hello Mr. President.";
 					} else {
 						$dao->insertJoinRequest($player, $alliance);
-						$joinTagSuccess = "Join request sent.";
+						$joinTagSuccess = "Authentication request sent to [{$alliance->tag}].";
 					}
 					$joinTag = "";
 				}
@@ -92,9 +101,11 @@ $playerAlliances = $dao->selectPermissionsByPlayer($player);
 					if (count($playerAlliances) == 0):
 						?><i>none</i><?php
 					else:
-						foreach ($playerAlliances as $a):
+						for ($i = 0; $i < count($playerAlliances); $i++):
+							$a = $playerAlliances[$i];
+							if ($i > 0) echo ' | ';
 							?><a href="alliance.php?tag=<?php echo urlencode($a->alliance->tag) ?>">[<?php echo htmlspecialchars($a->alliance->tag) ?>]</a><?php
-						endforeach;
+						endfor;
 					endif;
 					?>
 				</div>
@@ -128,6 +139,7 @@ $playerAlliances = $dao->selectPermissionsByPlayer($player);
 								?>
 								<tr>
 									<td>[<b><?php echo htmlspecialchars($r->alliance->tag)?></b>] - requested on <?php echo htmlspecialchars($r->requestDate->format("Y-m-d G:i T"))?>.</td>
+									<td><form method="post" action="home.php"><input type="hidden" name="cancelJoinRequest" value="<?php echo htmlspecialchars($r->id)?>" /><input type="submit" value="Cancel" class="button" /></form></td>
 								</tr>
 								<?php
 							endforeach;
