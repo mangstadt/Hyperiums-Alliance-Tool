@@ -65,6 +65,29 @@ CREATE TABLE IF NOT EXISTS joinRequests(
 	requestDate DATETIME NOT NULL
 );
 
+--Contains a record of the interactions a player has with an alliance.
+CREATE TABLE IF NOT EXISTS joinLogs(
+	joinLogId INT PRIMARY KEY AUTO_INCREMENT,
+	
+	--the player
+	playerId INT NOT NULL REFERENCES players(playerId),
+	
+	--the alliance
+	allianceId INT NOT NULL REFERENCES alliances(allianceId),
+	
+	/*
+	0 = player sent join request
+	1 = join request accepted
+	2 = join request rejected
+	3 = player canceled his join request
+	4 = player was removed from the alliance (after becoming member)
+	*/
+	event INT NOT NULL,
+	
+	--the date the action occurred
+	eventDate DATETIME NOT NULL
+);
+
 --The permissions each player has within each of their alliances
 --Also represents join requests that players make to an alliance
 CREATE TABLE IF NOT EXISTS permissions(

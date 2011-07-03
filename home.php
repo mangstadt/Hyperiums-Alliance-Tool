@@ -1,6 +1,7 @@
 <?php
 require_once 'lib/bootstrap.php';
 use db\HypToolsDao;
+use db\JoinLog;
 
 //has the player logged in?
 session_start();
@@ -19,9 +20,20 @@ $cancelJoinRequest = @$_POST['cancelJoinRequest'];
 if ($cancelJoinRequest !== null){
 	$joinRequest = $dao->selectJoinRequestById($cancelJoinRequest);
 	if ($joinRequest != null && $joinRequest->player->id == $player->id){
-		$dao->deleteJoinRequest($joinRequest->id);
+		$dao->beginTransaction();
+		try{
+			$dao->deleteJoinRequest($joinRequest->id);
+			$dao->insertJoinLog($player, $joinRequest->alliance, JoinLog::EVENT_CANCELLED);
+			$dao->commit();
+		} catch (Exception $e){
+			$dao->rollBack();
+			throw $e;
+		}
 	}
 }
+
+//get notifications
+$joinLogs = $dao->selectJoinLogsByPlayer($player);
 
 //user has requested to join an alliance
 $joinTag = @$_POST["joinTag"];
@@ -39,10 +51,26 @@ if ($joinTag !== null){
 				else {
 					if ($player->id == $alliance->president->id){
 						//the user is the president of the alliance, give him full access
-						$dao->insertPresidentPermission($player, $alliance);
+						$dao->beginTransaction();
+						try{
+							$dao->insertPresidentPermission($player, $alliance);
+							$dao->insertJoinLog($player, $alliance, JoinLog::EVENT_ACCEPTED);
+							$dao->commit();
+						} catch (Exception $e){
+							$dao->rollBack();
+							throw $e;
+						}
 						$joinTagSuccess = "Hello Mr. President.";
 					} else {
-						$dao->insertJoinRequest($player, $alliance);
+						$dao->beginTransaction();
+						try{
+							$dao->insertJoinRequest($player, $alliance);
+							$dao->insertJoinLog($player, $alliance, JoinLog::EVENT_REQUESTED);
+							$dao->commit();
+						} catch (Exception $e){
+							$dao->rollBack();
+							throw $e;
+						}
 						$joinTagSuccess = "Authentication request sent to [{$alliance->tag}].";
 					}
 					$joinTag = "";
@@ -108,6 +136,57 @@ $playerAlliances = $dao->selectPermissionsByPlayer($player);
 						endfor;
 					endif;
 					?>
+				</div>
+				
+				<div class="block">
+					<h1>Notifications</h1>
+					<div>
+						<?php
+						if (count($joinLogs) == 0):
+							?><i>None</i><?php
+						else:
+							?>
+							<table style="width:100%">
+							<?php
+							foreach ($joinLogs as $joinLog):
+								//$new = $joinLog->eventDate->format("U") - $player->lastLoginDate->format("U") > 0;
+								$new = false;
+								$description = null;
+								switch($joinLog->event):
+									case JoinLog::EVENT_ACCEPTED:
+										$description = "Your authentication request to the <b>[" . htmlspecialchars($joinLog->alliance->tag) . "]</b> alliance has been approved.";
+										break;
+									case JoinLog::EVENT_REJECTED:
+										$description = "Your authentivation request to the <b>[" . htmlspecialchars($joinTag->alliance->tag) . "]</b> alliance has been rejected.";
+										break;
+									case JoinLog::EVENT_REMOVED:
+										$description = "You have been removed from the <b>[" . htmlspecialchars($joinTag->alliance->tag) . "]</b> alliance.";
+										break;
+								endswitch;
+
+								if ($description != null):
+									?>
+									<tr>
+										<td valign="top">
+											<?php echo $new ? "<b>" : ""?>	
+											<?php echo htmlspecialchars($joinLog->eventDate->format("Y-m-d G:i T"))?>
+											<?php echo $new ? "</b>" : ""?>
+										</td>
+										<td valign="top">
+											<?php echo $new ? "<b>" : ""?>
+											<?php echo $description?>
+											<?php echo $new ? "</b>" : ""?>
+										</td>
+									</tr>
+									<?php
+								endif;
+							endforeach;
+							?>
+							</table>
+							<?php
+						endif;
+						?>
+					</div>
 				</div>
 				
 				<div class="block">

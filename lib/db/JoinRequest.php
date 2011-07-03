@@ -1,6 +1,10 @@
 <?php
 namespace db;
 
+/**
+ * A row from the "joinRequests" table.
+ * @author mangstadt
+ */
 class JoinRequest{
 	public $id;
 	

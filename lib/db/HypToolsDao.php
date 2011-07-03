@@ -582,6 +582,104 @@ class HypToolsDao{
 	}
 	
 	/**
+	 * Gets a list of join logs.
+	 * @param string $column the name of the column to include in the "WHERE" clause
+	 * @param string $value the value of the column in the "WHERE" clause
+	 * @param integer $pdoType the PDO type of the column
+	 * @param string $orderBy (optional) the ORDER BY clause
+	 * @return array(JoinLog) the join logs
+	 */
+	private function selectJoinLogs($column, $value, $pdoType, $orderBy = null){
+		$joinLogs = array();
+		
+		$sql = "
+		SELECT j.*,
+		a.*, a.name AS allianceName,
+		p.*, p.playerId AS thePlayerId, p.name AS playerName,
+		p2.*, p2.playerId AS presidentId, p2.name AS presidentName, p2.lastLoginDate AS presidentLastLoginDate,
+		g.*, g.name AS gameName, g.description AS gameDescription
+		FROM joinLogs j
+		INNER JOIN alliances a ON j.allianceID = a.allianceID
+		INNER JOIN players p ON j.playerId = p.playerId
+		INNER JOIN players p2 ON a.president = p2.playerId
+		INNER JOIN games g ON p.gameId = g.gameId
+		WHERE j.$column = :$column
+		";
+		if ($orderBy !== null){
+			$sql .= " ORDER BY $orderBy";
+		}
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindValue(":$column", $value, $pdoType);
+		$stmt->execute();
+		while ($row = $stmt->fetch()){
+			$joinLog = new JoinLog();
+			$joinLog->id = $row['joinLogId'];
+			$joinLog->event = $row['event'];
+			$joinLog->eventDate = $this->date($row['eventDate']);
+			
+			$game = new Game();
+			$game->id = $row['gameId'];
+			$game->name = $row['gameName'];
+			$game->description = $row['gameDescription'];
+			
+			$player = new Player();
+			$player->id = $row['thePlayerId'];
+			$player->name = $row['playerName'];
+			$player->lastLoginDate = $this->date($row['lastLoginDate']);
+			$player->game = $game;
+			$joinLog->player = $player;
+			
+			$president = new Player();
+			$president->id = $row['presidentId'];
+			$president->name = $row['presidentName'];
+			$president->lastLoginDate = $this->date($row['presidentLastLoginDate']);
+			$president->game = $game;
+			
+			$alliance = new Alliance();
+			$alliance->id = $row['allianceId'];
+			$alliance->name = $row['allianceName'];
+			$alliance->tag = $row['tag'];
+			$alliance->registeredDate = $this->date($row['registeredDate']);
+			$alliance->motd = $row['motd'];
+			$alliance->game = $game;
+			$alliance->president = $president;
+			$joinLog->alliance = $alliance;
+			
+			$joinLogs[] = $joinLog;
+		}
+		
+		return $joinLogs;
+	}
+	
+	/**
+	 * Gets all the join logs that belong to a player.
+	 * @param Player $player the player
+	 * @return array(JoinLog) the join logs
+	 */
+	public function selectJoinLogsByPlayer(Player $player){
+		return $this->selectJoinLogs("playerId", $player->id, PDO::PARAM_INT, "j.eventDate DESC");
+	}
+
+	/**
+	 * Inserts a new join log.
+	 * @param Player $player the player
+	 * @param Alliance $alliance the alliance
+	 * @param integer $event the event (see JoinLog::EVENT_*)
+	 */
+	public function insertJoinLog(Player $player, Alliance $alliance, $event){
+		$sql = "
+		INSERT INTO joinLogs
+		( playerId,  allianceId,  event, eventDate) VALUES
+		(:playerId, :allianceId, :event, Now())
+		";
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindValue(":playerId", $player->id, PDO::PARAM_INT);
+		$stmt->bindValue(":allianceId", $alliance->id, PDO::PARAM_INT);
+		$stmt->bindValue(":event", $event, PDO::PARAM_INT);
+		$stmt->execute();
+	}
+	
+	/**
 	 * Starts a database transaction.
 	 */
 	public function beginTransaction(){
