@@ -163,10 +163,10 @@ $playerAlliances = $dao->selectPermissionsByPlayer($player);
 										$description = "Your authentication request to the <b>[" . htmlspecialchars($joinLog->alliance->tag) . "]</b> alliance has been approved.";
 										break;
 									case JoinLog::EVENT_REJECTED:
-										$description = "Your authentivation request to the <b>[" . htmlspecialchars($joinTag->alliance->tag) . "]</b> alliance has been rejected.";
+										$description = "Your authentivation request to the <b>[" . htmlspecialchars($joinLog->alliance->tag) . "]</b> alliance has been rejected.";
 										break;
 									case JoinLog::EVENT_REMOVED:
-										$description = "You have been removed from the <b>[" . htmlspecialchars($joinTag->alliance->tag) . "]</b> alliance.";
+										$description = "You have been removed from the <b>[" . htmlspecialchars($joinLog->alliance->tag) . "]</b> alliance.";
 										break;
 								endswitch;
 
