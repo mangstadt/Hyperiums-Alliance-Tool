@@ -132,7 +132,7 @@ $playerAlliances = $dao->selectPermissionsByPlayer($player);
 						for ($i = 0; $i < count($playerAlliances); $i++):
 							$a = $playerAlliances[$i];
 							if ($i > 0) echo ' | ';
-							?><a href="alliance.php?tag=<?php echo urlencode($a->alliance->tag) ?>">[<?php echo htmlspecialchars($a->alliance->tag) ?>]</a><?php
+							?><a href="submit.php?tag=<?php echo urlencode($a->alliance->tag) ?>">[<?php echo htmlspecialchars($a->alliance->tag) ?>]</a><?php
 						endfor;
 					endif;
 					?>

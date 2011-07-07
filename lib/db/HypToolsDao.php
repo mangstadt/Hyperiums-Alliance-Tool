@@ -119,10 +119,10 @@ class HypToolsDao{
 	}
 	
 	/**
-	 * Selects a player from the database or creates a new row if one doesn't exist.
+	 * Inserts the player if he doesn't exist or updates the player with the most recent info if he does
 	 * @param string $name the player name
-	 * @param integer $hypPlayerId the Hyperiums player ID
-	 * @return Player the player
+	 * @param integer $hypPlayerId (optional) the Hyperiums player ID
+	 * @return Player the player that was inserted/updated
 	 */
 	public function upsertPlayer($name, $hypPlayerId = null){
 		$player = new Player();
@@ -130,35 +130,50 @@ class HypToolsDao{
 		$player->name = $name;
 		$player->hypPlayerId = $hypPlayerId;
 		
-		$sql = "SELECT playerId FROM players WHERE";
-		if ($hypPlayerId === null){
-			$sql .= " Ucase(name) = Ucase(:name)";
-		} else {
-			$sql .= " hypPlayerId = :hypPlayerId";
-		}
-		$sql .= " AND gameId = :gameId";
-		
-		$stmt = $this->db->prepare($sql);
-		if ($hypPlayerId === null){
-			$stmt->bindValue(":name", $name, PDO::PARAM_STR);
-		} else {
+		//search for player using hypPlayerId
+		if ($hypPlayerId != null){
+			$sql = "
+			SELECT playerId FROM players
+			WHERE hypPlayerId = :hypPlayerId
+			AND gameId = :gameId
+			";
+			$stmt = $this->db->prepare($sql);
 			$stmt->bindValue(":hypPlayerId", $hypPlayerId, PDO::PARAM_INT);
+			$stmt->bindValue(":gameId", $this->game->id, PDO::PARAM_INT);
+			$stmt->execute();
+			if ($row = $stmt->fetch()){
+				$id = $row[0];
+				$player->id = $id;
+				
+				$sql = "
+				UPDATE players
+				SET name = :name
+				WHERE playerId = :playerId
+				";
+				$stmt = $this->db->prepare($sql);
+				$stmt->bindValue(":name", $name, PDO::PARAM_STR);
+				$stmt->bindValue(":playerId", $id, PDO::PARAM_INT);
+				$stmt->execute();
+				
+				return $player;
+			}
 		}
+		
+		//search for player using name
+		$sql = "
+		SELECT playerId FROM players
+		WHERE Ucase(name) = Ucase(:name)
+		AND gameId = :gameId
+		";
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindValue(":name", $name, PDO::PARAM_STR);
 		$stmt->bindValue(":gameId", $this->game->id, PDO::PARAM_INT);
 		$stmt->execute();
+
 		if ($row = $stmt->fetch()){
 			$id = $row[0];
 			$player->id = $id;
-			
-			$sql = "
-			UPDATE players
-			SET name = :name
-			WHERE playerId = :playerId
-			";
-			$stmt = $this->db->prepare($sql);
-			$stmt->bindValue(":name", $name, PDO::PARAM_STR);
-			$stmt->bindValue(":playerId", $id, PDO::PARAM_INT);
-			$stmt->execute();
+			//no need to run an update because the name doesn't need to be updated
 		} else {
 			$sql = "
 			INSERT INTO players
@@ -341,12 +356,21 @@ class HypToolsDao{
 	}
 	
 	/**
-	 * Gets the player's join requests
+	 * Gets the player's join requests.
 	 * @param Player $player the player
 	 * @return array(JoinRequest) the player's join requests
 	 */
 	public function selectJoinRequestsByPlayer(Player $player){
 		return $this->selectJoinRequests("playerId", $player->id, PDO::PARAM_INT, "j.requestDate DESC");
+	}
+	
+	/**
+	 * Gets the join requests that were made to an alliance.
+	 * @param Alliance $alliance the alliance
+	 * @return array(JoinRequest) the join requests that were made to the alliance
+	 */
+	public function selectJoinRequestsByAlliance(Alliance $alliance){
+		return $this->selectJoinRequests("allianceId", $alliance->id, PDO::PARAM_INT, "j.requestDate");
 	}
 	
 	/**
@@ -374,16 +398,16 @@ class HypToolsDao{
 	}
 	
 	/**
-	 * Gets the player's permissions
-	 * @param Player $player the player
-	 * @param string $orderBy (optional) sort the permissions by this column
-	 * @return array(Permission) the player's permissions
+	 * Gets a list of permissions.
+	 * @param array(array) $where the list of where clauses (index 0 = column name, 1 = column value, 2 = PDO type)
+	 * @param string $orderBy (optional) the ORDER BY clause
+	 * @return array(Permission) the permissions
 	 */
-	public function selectPermissionsByPlayer(Player $player, $orderBy = null){
+	private function selectPermissions(array $where, $orderBy = null){
 		$sql = "
 		SELECT p.*,
 		a.*, a.name AS allianceName,
-		pl.*, pl.name AS playerName,
+		pl.*, pl.playerId AS thePlayerId, pl.name AS playerName,
 		pl2.playerId AS presidentId, pl2.name AS presidentName, pl2.lastLoginDate AS presidentLastLoginDate,
 		g.*, g.name AS gameName, g.description AS gameDescription
 		FROM permissions p
@@ -391,13 +415,20 @@ class HypToolsDao{
 		INNER JOIN games g ON g.gameID = pl.gameId
 		INNER JOIN alliances a ON p.allianceId = a.allianceId
 		INNER JOIN players pl2 ON a.president = pl2.playerId
-		WHERE p.playerId = :playerId
 		";
+		if (count($where) > 0){
+			$sql .= " WHERE p.{$where[0][0]} = :{$where[0][0]}";
+			for ($i = 1; $i < count($where); $i++){
+				$sql .= " AND p.{$where[$i][0]} = :{$where[$i][0]}";
+			}
+		}
 		if ($orderBy !== null){
 			$sql .= " ORDER BY $orderBy";
 		}
 		$stmt = $this->db->prepare($sql);
-		$stmt->bindValue(":playerId", $player->id, PDO::PARAM_INT);
+		foreach ($where as $w){
+			$stmt->bindValue(":" . $w[0], $w[1], $w[2]);
+		}
 		$stmt->execute();
 		$permissions = array();
 		while ($row = $stmt->fetch()){
@@ -415,7 +446,7 @@ class HypToolsDao{
 			$game->description = $row['gameDescription'];
 			
 			$player = new Player();
-			$player->id = $row['playerId'];
+			$player->id = $row['thePlayerId'];
 			$player->name = $row['playerName'];
 			$player->lastLoginDate = $this->date($row['lastLoginDate']);
 			$player->game = $game;
@@ -440,6 +471,133 @@ class HypToolsDao{
 			$permissions[] = $permission;
 		}
 		return $permissions;
+	}
+	
+	/**
+	 * Gets a permission.
+	 * @param integer $id the ID
+	 * @return Permission the permission or null if not found
+	 */
+	public function selectPermissionById($id){
+		$where = array(
+			array("permissionId", $id, PDO::PARAM_INT)
+		);
+		$ret = $this->selectPermissions($where);
+		if (count($ret) == 0){
+			return null;
+		}
+		return $ret[0];
+	}
+	
+	/**
+	 * Gets the player's permissions
+	 * @param Player $player the player
+	 * @return array(Permission) the player's permissions
+	 */
+	public function selectPermissionsByPlayer(Player $player){
+		$where = array(
+			array("playerId", $player->id, PDO::PARAM_INT)
+		);
+		return $this->selectPermissions($where, "a.tag");
+	}
+	
+	/**
+	 * Gets all members of an alliance.
+	 * @param Alliance $alliance the alliance
+	 * @return array(Permission) the members of the alliance
+	 */
+	public function selectPermissionsByAlliance(Alliance $alliance){
+		$where = array(
+			array("allianceId", $alliance->id, PDO::PARAM_INT)
+		);
+		return $this->selectPermissions($where, "pl.name");
+	}
+	
+	/**
+	 * Gets the permissions the player has for an alliance.
+	 * @param Player $player the player
+	 * @param Alliance $alliance the alliance
+	 * @return Permission the player's permissions in the given alliance or null if the player does not belong to the alliance
+	 */
+	public function selectPermissionsByPlayerAndAlliance(Player $player, Alliance $alliance){
+		$where = array(
+			array("playerId", $player->id, PDO::PARAM_INT),
+			array("allianceId", $alliance->id, PDO::PARAM_INT)
+		);
+		$ret = $this->selectPermissions($where);
+		
+		if (count($ret) == 0){
+			return null;
+		}
+		return $ret[0];
+	}
+	
+	/**
+	 * Inserts a new permission.
+	 * @param Permission $permission the permission to insert
+	 */
+	public function insertPermission(Permission $permission){
+		$sql = "
+		INSERT INTO permissions
+		( playerId,  allianceId,  perms, joinDate) VALUES
+		(:playerId, :allianceId, :perms, Now())
+		";
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindValue(":playerId", $permission->player->id, PDO::PARAM_INT);
+		$stmt->bindValue(":allianceId", $permission->alliance->id, PDO::PARAM_INT);
+		$perms = 0;
+		if ($permission->permSubmit){
+			$perms = $perms | self::PERMS_SUBMIT;
+		}
+		if ($permission->permView){
+			$perms = $perms | self::PERMS_VIEW;
+		}
+		if ($permission->permAdmin){
+			$perms = $perms | self::PERMS_ADMIN;
+		}
+		$stmt->bindValue(":perms", $perms, PDO::PARAM_INT);
+		$stmt->execute();
+		
+		//update object
+		$permission->id = $this->db->lastInsertId();
+		$permission->joinDate = new DateTime('now');
+	}
+	
+	/**
+	 * Updates a new permission.
+	 * @param Permission $permission the permission to update
+	 */
+	public function updatePermission(Permission $permission){
+		$sql = "
+		UPDATE permissions SET
+		perms = :perms
+		WHERE permissionId = :permissionId
+		";
+		$stmt = $this->db->prepare($sql);
+		$perms = 0;
+		if ($permission->permSubmit){
+			$perms = $perms | self::PERMS_SUBMIT;
+		}
+		if ($permission->permView){
+			$perms = $perms | self::PERMS_VIEW;
+		}
+		if ($permission->permAdmin){
+			$perms = $perms | self::PERMS_ADMIN;
+		}
+		$stmt->bindValue(":perms", $perms, PDO::PARAM_INT);
+		$stmt->bindValue(":permissionId", $permission->id, PDO::PARAM_INT);
+		$stmt->execute();
+	}
+	
+	/**
+	 * Deletes a permission.
+	 * @param integer $id the permission ID
+	 */
+	public function deletePermission($id){
+		$sql = "DELETE FROM permissions WHERE permissionId = :permissionId";
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindValue(":permissionId", $id, PDO::PARAM_INT);
+		$stmt->execute();
 	}
 	
 	/**
@@ -485,16 +643,13 @@ class HypToolsDao{
 	 * @param Alliance $alliance the alliance
 	 */
 	public function insertPresidentPermission(Player $president, Alliance $alliance){
-		$sql = "
-		INSERT INTO permissions
-		( playerId,  allianceId,  perms, joinDate) VALUES
-		(:playerId, :allianceId, :perms, Now())
-		";
-		$stmt = $this->db->prepare($sql);
-		$stmt->bindValue(":playerId", $president->id, PDO::PARAM_INT);
-		$stmt->bindValue(":allianceId", $alliance->id, PDO::PARAM_INT);
-		$stmt->bindValue(":perms", self::PERMS_SUBMIT | self::PERMS_VIEW | self::PERMS_ADMIN, PDO::PARAM_INT);
-		$stmt->execute();
+		$permission = new Permission();
+		$permission->player = $president;
+		$permission->alliance = $alliance;
+		$permission->permSubmit = true;
+		$permission->permView = true;
+		$permission->permAdmin = true;
+		$this->insertPermission($permission);
 		
 		$sql = "UPDATE alliances SET registeredDate = Now() WHERE allianceId = :allianceId";
 		$stmt = $this->db->prepare($sql);
