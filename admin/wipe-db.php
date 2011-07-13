@@ -11,12 +11,12 @@ if (!isset($_SESSION['loggedIn'])){
 }
 
 require_once '../lib/bootstrap.php';
-use db\HypToolsDao;
+use db\HypToolsMySqlDao;
 
 header("Content-Type: text/plain");
 
 echo "Dropping all tables...\n";
 flush();
-$dao = new HypToolsDao();
+$dao = new HypToolsMySqlDao();
 $dao->dropAllTables();
 echo "Done.";

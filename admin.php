@@ -1,6 +1,7 @@
 <?php
 require_once 'lib/bootstrap.php';
-use db\HypToolsDao;
+use db\HypToolsMySqlDao;
+use db\HypToolsMockDao;
 use db\JoinLog;
 use db\Permission;
 
@@ -26,7 +27,8 @@ if ($allianceTag == null){
 
 //init DAO
 $player = $_SESSION['player'];
-$dao = new HypToolsDao($player->game);
+$mock = $_SESSION['mock'];
+$dao = $mock ? new HypToolsMockDao($player->game) : new HypToolsMySqlDao($player->game);
 
 //get the specified alliance
 $alliance = $dao->selectAllianceByTag($allianceTag);
@@ -150,37 +152,40 @@ if ($method != null){
 			throw $e;
 		}
 	} else if ($method == "authPlayers"){
-		$players = preg_split("/\\s*,\\s*/", $_POST['players']);
-		
-		//update DB
-		$dao->beginTransaction();
-		try{
-			$new = 0;
-			$already = 0;
-			foreach ($players as $p){
-				$player = $dao->upsertPlayer($p);
-				$permission = $dao->selectPermissionsByPlayerAndAlliance($player, $alliance);
-				if ($permission == null){
-					$p = new Permission();
-					$p->player = $player;
-					$p->alliance = $alliance;
-					$p->permSubmit = true;
-					$p->permView = false;
-					$p->permAdmin = false;
-					$dao->insertPermission($p);
-					$dao->insertJoinLog($player, $alliance, JoinLog::EVENT_ACCEPTED);
-					$new++;
-				} else {
-					//player already belongs to this alliance
-					$already++;
-				}
-			}
-			$dao->commit();
+		$players = trim($_POST['players']);
+		if (strlen($players) > 0){
+			$players = preg_split("/\\s*,\\s*/", $players);
 			
-			$message = "$new new player(s) authenticated. $already player(s) were already authenticated.";
-		} catch (Exception $e){
-			$dao->rollBack();
-			throw $e;
+			//update DB
+			$dao->beginTransaction();
+			try{
+				$new = 0;
+				$already = 0;
+				foreach ($players as $p){
+					$player = $dao->upsertPlayer($p);
+					$permission = $dao->selectPermissionsByPlayerAndAlliance($player, $alliance);
+					if ($permission == null){
+						$p = new Permission();
+						$p->player = $player;
+						$p->alliance = $alliance;
+						$p->permSubmit = true;
+						$p->permView = false;
+						$p->permAdmin = false;
+						$dao->insertPermission($p);
+						$dao->insertJoinLog($player, $alliance, JoinLog::EVENT_ACCEPTED);
+						$new++;
+					} else {
+						//player already belongs to this alliance
+						$already++;
+					}
+				}
+				$dao->commit();
+				
+				$message = "$new new player(s) authenticated. $already player(s) were already authenticated.";
+			} catch (Exception $e){
+				$dao->rollBack();
+				throw $e;
+			}
 		}
 	}
 }
@@ -361,6 +366,10 @@ $memberPermissions = $dao->selectPermissionsByAlliance($alliance);
 			</div>
 			
 			<div id="content" style="color:white">
+			
+				<div>
+					Hello, <b><?php echo htmlspecialchars($player->name)?>!</b>
+				</div>
 			
 				<div>
 					<a href="home.php">Home</a>

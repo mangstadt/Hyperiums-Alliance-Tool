@@ -5,7 +5,8 @@
 
 	use HAPI\HAPI;
 	use HAPI\Game;
-	use db\HypToolsDao;
+	use db\HypToolsMySqlDao;
+	use db\HypToolsMockDao;
 
 	$loggedOut = isset($_GET["loggedout"]);
 	
@@ -23,7 +24,7 @@
 			$errors[] = 'You must specify a nickname.';
 		}
 		
-		if (strlen($hkey) == 0){
+		if (!$mock && strlen($hkey) == 0){
 			$errors[] = 'You must specify a HAPI Key.';
 		}
 
@@ -33,6 +34,8 @@
 				$hapi = $mock ? "hapi" : new HAPI($game_select, $login, $hkey);
 				session_start();
 				$_SESSION['hapi'] = $hapi;
+				
+				$_SESSION['mock'] = $mock;
 				
 				//find the game the user selected
 				$game = null; //HAPI\Game
@@ -44,7 +47,7 @@
 				}
 				
 				//init the DAO
-				$dao = new HypToolsDao();
+				$dao = $mock ? new HypToolsMockDao($login) : new HypToolsMySqlDao();
 				
 				//insert game into DB
 				$game = $dao->upsertGame($game->getName(), $game->getDescription());
@@ -119,7 +122,7 @@
 							?>
 							<?php
 							if ($mock):
-								?><div style="color:yellow">Mock mode engaged</div><?php
+								?><p style="color:yellow">Mock mode activated.</p><?php
 							endif;
 							?>
 							<form id="loginForm" method="POST" action="index.php">
@@ -145,7 +148,7 @@
 								<input type="text" name="login_input" id="login_input" value="<?php echo htmlspecialchars(@$_POST['login_input'])?>"/>
 								<br/>
 								<label for="hkey_input">Your HAPI Key</label>
-								<input type="text" name="hkey_input" id="hkey_input" value="<?php echo htmlspecialchars(@$_POST['hkey_input'])?>"/>
+								<input <?php echo $mock ? 'disabled="disabled"' : ''?> type="text" name="hkey_input" id="hkey_input" value="<?php echo $mock ? 'mock mode' : htmlspecialchars(@$_POST['hkey_input'])?>"/>
 								<br/>
 								<input type="submit" value="Login"/>
 							</form>

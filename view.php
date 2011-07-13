@@ -1,6 +1,7 @@
 <?php
 require_once 'lib/bootstrap.php';
-use db\HypToolsDao;
+use db\HypToolsMySqlDao;
+use db\HypToolsMockDao;
 use db\JoinLog;
 
 //has the player logged in?
@@ -20,7 +21,8 @@ if ($allianceTag == null){
 
 //init DAO
 $player = $_SESSION['player'];
-$dao = new HypToolsDao($player->game);
+$mock = $_SESSION['mock'];
+$dao = $mock ? new HypToolsMockDao($player->game) : new HypToolsMySqlDao($player->game);
 
 //get the specified alliance
 $alliance = $dao->selectAllianceByTag($allianceTag);
@@ -74,6 +76,10 @@ $playerAlliances = $dao->selectPermissionsByPlayer($player);
 			<div id="content" style="color:white">
 			
 				<div>
+					Hello, <b><?php echo htmlspecialchars($player->name)?>!</b>
+				</div>
+			
+				<div>
 					<a href="home.php">Home</a>
 					<a href="logout.php">Logout</a>
 				</div>
@@ -98,10 +104,10 @@ $playerAlliances = $dao->selectPermissionsByPlayer($player);
 					<?php
 					$links = array();
 					if ($playerPermissions->permSubmit):
-						$links[] = '<b><a href="submit.php?tag=' . urlencode($alliance->tag) . '">Submit Data</a></b>';
+						$links[] = '<a href="submit.php?tag=' . urlencode($alliance->tag) . '">Submit Data</a>';
 					endif;
 					if ($playerPermissions->permView):
-						$links[] = '<a href="view.php?tag=' . urlencode($alliance->tag) . '">View Alliance Data</a>';
+						$links[] = '<b><a href="view.php?tag=' . urlencode($alliance->tag) . '">View Alliance Data</a></b>';
 					endif;
 					if ($playerPermissions->permAdmin):
 						$links[] = '<a href="admin.php?tag=' . urlencode($alliance->tag) . '">Admin</a>';

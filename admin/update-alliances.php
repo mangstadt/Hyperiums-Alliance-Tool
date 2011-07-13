@@ -14,7 +14,7 @@ if (!isset($_SESSION['loggedIn'])){
 require_once '../lib/bootstrap.php';
 use HAPI\HAPI;
 use HAPI\Parsers\AllianceParser;
-use db\HypToolsDao;
+use db\HypToolsMySqlDao;
 
 header("Content-Type: text/plain");
 
@@ -40,7 +40,7 @@ if (count($dataFiles) == 0){
 $games = HAPI::getAllGames();
 
 //init the DAO
-$dao = new HypToolsDao();
+$dao = new HypToolsMySqlDao();
 
 foreach ($dataFiles as $dataFile){
 	$gameName = $dataFile[0];

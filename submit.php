@@ -1,6 +1,7 @@
 <?php
 require_once 'lib/bootstrap.php';
-use db\HypToolsDao;
+use db\HypToolsMySqlDao;
+use db\HypToolsMockDao;
 use db\JoinLog;
 
 //has the player logged in?
@@ -11,9 +12,10 @@ if ($hapi == null){
 	exit();
 }
 
+//init DAO
 $player = $_SESSION['player'];
-
-$dao = new HypToolsDao($player->game);
+$mock = $_SESSION['mock'];
+$dao = $mock ? new HypToolsMockDao($player->game) : new HypToolsMySqlDao($player->game);
 
 //was a tag specified?
 $allianceTag = @$_REQUEST['tag'];
@@ -68,6 +70,10 @@ $playerAlliances = $dao->selectPermissionsByPlayer($player);
 			</div>
 			
 			<div id="content" style="color:white">
+			
+				<div>
+					Hello, <b><?php echo htmlspecialchars($player->name)?>!</b>
+				</div>
 			
 				<div>
 					<a href="home.php">Home</a>
