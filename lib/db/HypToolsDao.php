@@ -63,6 +63,13 @@ interface HypToolsDao{
 	public function deleteJoinRequest($id);
 	
 	/**
+	 * Deletes a join request.
+	 * @param Player $player the player who made the join request
+	 * @param Alliance $alliance the alliance that the player made the request to
+	 */
+	public function deleteJoinRequestByPlayerAndAlliance(Player $player, Alliance $alliance);
+	
+	/**
 	 * Determines if a player has made a request to join an alliance.
 	 * @param Player $player the player
 	 * @param Alliance $alliance the alliance

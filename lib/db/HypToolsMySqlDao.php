@@ -397,6 +397,18 @@ class HypToolsMySqlDao implements HypToolsDao{
 		$stmt->execute();
 	}
 	
+	public function deleteJoinRequestByPlayerAndAlliance(Player $player, Alliance $alliance){
+		$sql = "
+		DELETE FROM joinRequests
+		WHERE playerId = :playerId
+		AND allianceId = :allianceId
+		";
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindValue(":playerId", $player->id, PDO::PARAM_INT);
+		$stmt->bindValue(":allianceId", $alliance->id, PDO::PARAM_INT);
+		$stmt->execute();
+	}
+	
 	/**
 	 * Gets a list of permissions.
 	 * @param array(array) $where the list of where clauses (index 0 = column name, 1 = column value, 2 = PDO type)

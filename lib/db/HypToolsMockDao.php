@@ -428,6 +428,15 @@ class HypToolsMockDao implements HypToolsDao{
 	}
 	
 	//override
+	public function deleteJoinRequestByPlayerAndAlliance(Player $player, Alliance $alliance){
+		foreach ($this->joinRequests as $i=>$j){
+			if ($j->player->id == $player->id && $j->alliance->id == $alliance->id){
+				unset($this->joinRequests[$i]);
+			}
+		}
+	}
+	
+	//override
 	public function selectPermissionById($id){
 		foreach ($this->permissions as $p){
 			if ($p->id == $id){

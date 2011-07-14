@@ -165,6 +165,9 @@ if ($method != null){
 					$player = $dao->upsertPlayer($p);
 					$permission = $dao->selectPermissionsByPlayerAndAlliance($player, $alliance);
 					if ($permission == null){
+						//delete the player's join request if he made one
+						$dao->deleteJoinRequestByPlayerAndAlliance($player, $alliance);
+						
 						$p = new Permission();
 						$p->player = $player;
 						$p->alliance = $alliance;
