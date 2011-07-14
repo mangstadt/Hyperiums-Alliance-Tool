@@ -10,7 +10,19 @@
 
 	$loggedOut = isset($_GET["loggedout"]);
 	
-	$games = HAPI::getAllGames();
+	//get list of games
+	$gamesCache = Env::$cacheDir . '/games.ser';
+	$games = null;
+	if (file_exists($gamesCache)){
+		if (time() - filemtime($gamesCache) < 60 * 60){
+			//use cached file if it's less than one hour old
+			$games = unserialize(file_get_contents($gamesCache));
+		}
+	}
+	if ($games == null){
+		$games = HAPI::getAllGames();
+		file_put_contents($gamesCache, serialize($games));
+	}
 	
 	$mock = isset($_REQUEST['mock']);
 	
@@ -31,7 +43,7 @@
 		if (count($errors) == 0){
 			try{
 				//authenticate with Hyperiums
-				$hapi = $mock ? "hapi" : new HAPI($game_select, $login, $hkey);
+				$hapi = $mock ? "hapi" : new HAPI($game_select, $login, $hkey, Env::$cacheDir . '/locks');
 				session_start();
 				$_SESSION['hapi'] = $hapi;
 				
