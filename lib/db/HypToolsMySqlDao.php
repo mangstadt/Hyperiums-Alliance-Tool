@@ -4,6 +4,7 @@ namespace db;
 use \PDO;
 use \DateTime;
 use \Exception;
+use \Env;
 
 /**
  * Controls all database interaction.
@@ -45,8 +46,7 @@ class HypToolsMySqlDao implements HypToolsDao{
 	 * @param Game $game (optional) the game the player is logged into
 	 */
 	public function __construct(Game $game = null){
-		include __DIR__ . '/db.php';
-		$this->db = $db;
+		$this->db = Env::dbConnect();
 		
 		//throw exception when a database error occurs instead of just returning "false"
 		$this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
