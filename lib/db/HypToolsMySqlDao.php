@@ -63,21 +63,13 @@ class HypToolsMySqlDao implements HypToolsDao{
 
 		$this->game = $game;
 	}
-	
-	/**
-	 * Sets the game that the player is logged into.
-	 * @param Game $game the game the player is logged into
-	 */
+
+	//override
 	public function setGame(Game $game){
 		$this->game = $game;
 	}
-	
-	/**
-	 * Updates or inserts game info.
-	 * @param string $name the game name
-	 * @param string $description the game description
-	 * @return Game the game
-	 */
+
+	//override
 	public function upsertGame($name, $description){
 		$game = new Game();
 		$game->name = $name;
@@ -118,12 +110,7 @@ class HypToolsMySqlDao implements HypToolsDao{
 		return $game;
 	}
 	
-	/**
-	 * Inserts the player if he doesn't exist or updates the player with the most recent info if he does
-	 * @param string $name the player name
-	 * @param integer $hypPlayerId (optional) the Hyperiums player ID
-	 * @return Player the player that was inserted/updated
-	 */
+	//override
 	public function upsertPlayer($name, $hypPlayerId = null){
 		$player = new Player();
 		$player->game = $this->game;
@@ -191,11 +178,8 @@ class HypToolsMySqlDao implements HypToolsDao{
 		
 		return $player;
 	}
-	
-	/**
-	 * Updates the player's last login information.
-	 * @param Player $player the player
-	 */
+
+	//override
 	public function updatePlayerLastLogin(Player $player){
 		$sql = "
 		UPDATE players SET
@@ -210,11 +194,7 @@ class HypToolsMySqlDao implements HypToolsDao{
 		$player->lastLoginDate = new DateTime("now");
 	}
 	
-	/**
-	 * Determines whether an alliance exists or not.
-	 * @param string $tag the alliance tag
-	 * @return boolean true if the alliance exists, false if not
-	 */
+	//override
 	public function doesAllianceExist($tag){
 		$sql = "
 		SELECT Count(*) FROM alliances
@@ -229,12 +209,7 @@ class HypToolsMySqlDao implements HypToolsDao{
 		return $row[0] > 0;
 	}
 	
-	/**
-	 * Updates an alliance or inserts it if it doesn't exist.
-	 * @param string $tag the alliance's tag
-	 * @param string $name the alliance's name
-	 * @param string $president the name of the president
-	 */
+	//override
 	public function upsertAlliance($tag, $name, $president){
 		$presPlayer = $this->upsertPlayer($president);
 		
@@ -266,12 +241,7 @@ class HypToolsMySqlDao implements HypToolsDao{
 		}
 	}
 	
-	/**
-	 * Determines if a player has made a request to join an alliance.
-	 * @param Player $player the player
-	 * @param Alliance $alliance the alliance
-	 * @return boolean true if the player has requested to join the alliance
-	 */
+	//override
 	public function hasPlayerMadeJoinRequest(Player $player, Alliance $alliance){
 		$sql = "
 		SELECT Count(*) FROM joinRequests
@@ -355,29 +325,17 @@ class HypToolsMySqlDao implements HypToolsDao{
 		return $joinRequests;
 	}
 	
-	/**
-	 * Gets the player's join requests.
-	 * @param Player $player the player
-	 * @return array(JoinRequest) the player's join requests
-	 */
+	//override
 	public function selectJoinRequestsByPlayer(Player $player){
 		return $this->selectJoinRequests("playerId", $player->id, PDO::PARAM_INT, "j.requestDate DESC");
 	}
 	
-	/**
-	 * Gets the join requests that were made to an alliance.
-	 * @param Alliance $alliance the alliance
-	 * @return array(JoinRequest) the join requests that were made to the alliance
-	 */
+	//override
 	public function selectJoinRequestsByAlliance(Alliance $alliance){
 		return $this->selectJoinRequests("allianceId", $alliance->id, PDO::PARAM_INT, "j.requestDate");
 	}
 	
-	/**
-	 * Gets a join request.
-	 * @param integer $id the join request ID
-	 * @return JoinRequest the join request or null if not found
-	 */
+	//override
 	public function selectJoinRequestById($id){
 		$ret = $this->selectJoinRequests("joinRequestId", $id, PDO::PARAM_INT);
 		if (count($ret) == 1){
@@ -386,10 +344,7 @@ class HypToolsMySqlDao implements HypToolsDao{
 		return null;
 	}
 	
-	/**
-	 * Deletes a join request.
-	 * @param integer $id the join request ID
-	 */
+	//override
 	public function deleteJoinRequest($id){
 		$sql = "DELETE FROM joinRequests WHERE joinRequestId = :joinRequestId";
 		$stmt = $this->db->prepare($sql);
@@ -397,6 +352,7 @@ class HypToolsMySqlDao implements HypToolsDao{
 		$stmt->execute();
 	}
 	
+	//override
 	public function deleteJoinRequestByPlayerAndAlliance(Player $player, Alliance $alliance){
 		$sql = "
 		DELETE FROM joinRequests
@@ -485,11 +441,7 @@ class HypToolsMySqlDao implements HypToolsDao{
 		return $permissions;
 	}
 	
-	/**
-	 * Gets a permission.
-	 * @param integer $id the ID
-	 * @return Permission the permission or null if not found
-	 */
+	//override
 	public function selectPermissionById($id){
 		$where = array(
 			array("permissionId", $id, PDO::PARAM_INT)
@@ -501,11 +453,7 @@ class HypToolsMySqlDao implements HypToolsDao{
 		return $ret[0];
 	}
 	
-	/**
-	 * Gets the player's permissions
-	 * @param Player $player the player
-	 * @return array(Permission) the player's permissions
-	 */
+	//override
 	public function selectPermissionsByPlayer(Player $player){
 		$where = array(
 			array("playerId", $player->id, PDO::PARAM_INT)
@@ -513,11 +461,7 @@ class HypToolsMySqlDao implements HypToolsDao{
 		return $this->selectPermissions($where, "a.tag");
 	}
 	
-	/**
-	 * Gets all members of an alliance.
-	 * @param Alliance $alliance the alliance
-	 * @return array(Permission) the members of the alliance
-	 */
+	//override
 	public function selectPermissionsByAlliance(Alliance $alliance){
 		$where = array(
 			array("allianceId", $alliance->id, PDO::PARAM_INT)
@@ -525,12 +469,7 @@ class HypToolsMySqlDao implements HypToolsDao{
 		return $this->selectPermissions($where, "pl.name");
 	}
 	
-	/**
-	 * Gets the permissions the player has for an alliance.
-	 * @param Player $player the player
-	 * @param Alliance $alliance the alliance
-	 * @return Permission the player's permissions in the given alliance or null if the player does not belong to the alliance
-	 */
+	//override
 	public function selectPermissionsByPlayerAndAlliance(Player $player, Alliance $alliance){
 		$where = array(
 			array("playerId", $player->id, PDO::PARAM_INT),
@@ -544,10 +483,7 @@ class HypToolsMySqlDao implements HypToolsDao{
 		return $ret[0];
 	}
 	
-	/**
-	 * Inserts a new permission.
-	 * @param Permission $permission the permission to insert
-	 */
+	//override
 	public function insertPermission(Permission $permission){
 		$sql = "
 		INSERT INTO permissions
@@ -575,10 +511,7 @@ class HypToolsMySqlDao implements HypToolsDao{
 		$permission->joinDate = new DateTime('now');
 	}
 	
-	/**
-	 * Updates a new permission.
-	 * @param Permission $permission the permission to update
-	 */
+	//override
 	public function updatePermission(Permission $permission){
 		$sql = "
 		UPDATE permissions SET
@@ -601,10 +534,7 @@ class HypToolsMySqlDao implements HypToolsDao{
 		$stmt->execute();
 	}
 	
-	/**
-	 * Deletes a permission.
-	 * @param integer $id the permission ID
-	 */
+	//override
 	public function deletePermission($id){
 		$sql = "DELETE FROM permissions WHERE permissionId = :permissionId";
 		$stmt = $this->db->prepare($sql);
@@ -612,12 +542,7 @@ class HypToolsMySqlDao implements HypToolsDao{
 		$stmt->execute();
 	}
 	
-	/**
-	 * Determines if a player belongs to an alliance.
-	 * @param Player $player the player
-	 * @param Alliance $alliance the alliance
-	 * @return boolean true if the player belongs to the alliance
-	 */
+	//override
 	public function doesPlayerBelongToAlliance(Player $player, Alliance $alliance){
 		$sql = "
 		SELECT Count(*) FROM permissions
@@ -632,11 +557,7 @@ class HypToolsMySqlDao implements HypToolsDao{
 		return $row[0] > 0;
 	}
 	
-	/**
-	 * Make a request for a player to join an alliance.
-	 * @param Player $player the player
-	 * @param string $tag the alliance tag
-	 */
+	//override
 	public function insertJoinRequest(Player $player, Alliance $alliance){
 		$sql = "
 		INSERT INTO joinRequests
@@ -649,11 +570,7 @@ class HypToolsMySqlDao implements HypToolsDao{
 		$stmt->execute();
 	}
 	
-	/**
-	 * Gives an alliance president full access to his alliance.
-	 * @param Player $player the player
-	 * @param Alliance $alliance the alliance
-	 */
+	//override
 	public function insertPresidentPermission(Player $president, Alliance $alliance){
 		$permission = new Permission();
 		$permission->player = $president;
@@ -672,11 +589,7 @@ class HypToolsMySqlDao implements HypToolsDao{
 		$alliance->registeredDate = new DateTime("now");
 	}
 	
-	/**
-	 * Gets an alliance.
-	 * @param string $tag the alliance's tag
-	 * @return Alliance the alliance
-	 */
+	//override
 	public function selectAllianceByTag($tag){
 		$alliance = null;
 		
@@ -710,9 +623,7 @@ class HypToolsMySqlDao implements HypToolsDao{
 		return $alliance;
 	}
 	
-	/**
-	 * Wipes the database.
-	 */
+	//override
 	public function dropAllTables(){
 		$this->beginTransaction();
 		try{
@@ -818,21 +729,12 @@ class HypToolsMySqlDao implements HypToolsDao{
 		return $joinLogs;
 	}
 	
-	/**
-	 * Gets all the join logs that belong to a player.
-	 * @param Player $player the player
-	 * @return array(JoinLog) the join logs
-	 */
+	//override
 	public function selectJoinLogsByPlayer(Player $player){
 		return $this->selectJoinLogs("playerId", $player->id, PDO::PARAM_INT, "j.eventDate DESC");
 	}
 
-	/**
-	 * Inserts a new join log.
-	 * @param Player $player the player
-	 * @param Alliance $alliance the alliance
-	 * @param integer $event the event (see JoinLog::EVENT_*)
-	 */
+	//override
 	public function insertJoinLog(Player $player, Alliance $alliance, $event){
 		$sql = "
 		INSERT INTO joinLogs
@@ -846,23 +748,17 @@ class HypToolsMySqlDao implements HypToolsDao{
 		$stmt->execute();
 	}
 	
-	/**
-	 * Starts a database transaction.
-	 */
+	//override
 	public function beginTransaction(){
 		$this->db->beginTransaction();
 	}
 	
-	/**
-	 * Commits a database transaction.
-	 */
+	//override
 	public function commit(){
 		$this->db->commit();
 	}
 	
-	/**
-	 * Rollsback a database transaction.
-	 */
+	//override
 	public function rollBack(){
 		$this->db->rollBack();
 	}
