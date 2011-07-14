@@ -1,1 +1,2 @@
 php_extensions: [pdo_mysql]
+shared_writable_dirs: [/cache]
