@@ -27,4 +27,4 @@ class Env{
 	}
 }
 
-Env::$cacheDir = "/home/mangstadt/hyperiums-alliance-tool/shared/cache";
+Env::$cacheDir = __DIR__ . '/../cache';
