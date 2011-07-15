@@ -27,4 +27,4 @@ class Env{
 	}
 }
 
-Env::$cacheDir = "/shared";
+Env::$cacheDir = "/cache";
