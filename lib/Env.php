@@ -27,4 +27,4 @@ class Env{
 	}
 }
 
-Env::$cacheDir = "/shared/cache";
+Env::$cacheDir = "/hyperiums-alliance-tool/shared/cache";
