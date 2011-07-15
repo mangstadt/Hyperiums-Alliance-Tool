@@ -1,2 +1,4 @@
 php_extensions: [pdo_mysql]
+php_error_reporting: 'E_ALL'
+php_display_errors: Off
 shared_writable_dirs: [/cache]
