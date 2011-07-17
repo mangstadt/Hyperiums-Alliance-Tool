@@ -15,7 +15,7 @@ class Session{
 		return self::get('hapi');
 	}
 	
-	public static function setHapi(\HAPI\HAPI $hapi){
+	public static function setHapi($hapi){
 		self::set('hapi', $hapi);
 	}
 	
