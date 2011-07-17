@@ -5,15 +5,13 @@ use db\HypToolsMockDao;
 use db\JoinLog;
 
 //has the player logged in?
-session_start();
-$hapi = @$_SESSION['hapi'];
-if ($hapi == null){
+if (!Session::isLoggedIn()){
 	header('Location: index.php');
 	exit();
 }
 
-$player = $_SESSION['player'];
-$mock = $_SESSION['mock'];
+$player = Session::getPlayer();
+$mock = Session::isMockEnabled();
 $dao = $mock ? new HypToolsMockDao($player->game) : new HypToolsMySqlDao($player->game);
 
 //user has requested to cancel a pending join request

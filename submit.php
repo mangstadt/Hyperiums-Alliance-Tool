@@ -5,16 +5,14 @@ use db\HypToolsMockDao;
 use db\JoinLog;
 
 //has the player logged in?
-session_start();
-$hapi = @$_SESSION['hapi'];
-if ($hapi == null){
+if (!Session::isLoggedIn()){
 	header('Location: index.php');
 	exit();
 }
 
 //init DAO
-$player = $_SESSION['player'];
-$mock = $_SESSION['mock'];
+$player = Session::getPlayer();
+$mock = Session::isMockEnabled();
 $dao = $mock ? new HypToolsMockDao($player->game) : new HypToolsMySqlDao($player->game);
 
 //was a tag specified?

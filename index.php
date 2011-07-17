@@ -1,7 +1,5 @@
 <?php
 	require_once 'lib/bootstrap.php';
-	
-	error_reporting(E_ERROR) ;
 
 	use HAPI\HAPI;
 	use HAPI\Game;
@@ -20,6 +18,7 @@
 		}
 	}
 	if ($games == null){
+		//get list of games from Hyperiums servers
 		$games = HAPI::getAllGames();
 		file_put_contents($gamesCache, serialize($games));
 	}
@@ -45,9 +44,9 @@
 				//authenticate with Hyperiums
 				$hapi = $mock ? "hapi" : new HAPI($game_select, $login, $hkey, Env::$cacheDir . '/locks');
 				session_start();
-				$_SESSION['hapi'] = $hapi;
+				Session::setHapi($hapi);
 				
-				$_SESSION['mock'] = $mock;
+				Session::setMockEnabled($mock);
 				
 				//find the game the user selected
 				$game = null; //HAPI\Game
@@ -72,7 +71,7 @@
 				$playerName = $mock ? $login : $hapi->getSession()->getPlayerName();
 				$player = $dao->upsertPlayer($playerName, $playerId);
 				$dao->updatePlayerLastLogin($player);
-				$_SESSION['player'] = $player;
+				Session::setPlayer($player);
 				
 				header('Location: home.php');
 				exit();

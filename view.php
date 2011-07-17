@@ -5,9 +5,7 @@ use db\HypToolsMockDao;
 use db\JoinLog;
 
 //has the player logged in?
-session_start();
-$hapi = @$_SESSION['hapi'];
-if ($hapi == null){
+if (!Session::isLoggedIn()){
 	header('Location: index.php');
 	exit();
 }
@@ -20,8 +18,8 @@ if ($allianceTag == null){
 }
 
 //init DAO
-$player = $_SESSION['player'];
-$mock = $_SESSION['mock'];
+$player = Session::getPlayer();
+$mock = Session::isMockEnabled();
 $dao = $mock ? new HypToolsMockDao($player->game) : new HypToolsMySqlDao($player->game);
 
 //get the specified alliance
