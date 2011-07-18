@@ -35,6 +35,14 @@ class Session{
 		self::set('mock', $mock);
 	}
 	
+	public static function getHapiFleetsInfo(){
+		return self::get('hapiFleetsInfo');
+	}
+	
+	public static function setHapiFleetsInfo($hapiFleetsInfo){
+		self::set('hapiFleetsInfo', $hapiFleetsInfo);
+	}
+	
 	private static function get($key){
 		return @$_SESSION[$key];
 	}

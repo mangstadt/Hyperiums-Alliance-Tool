@@ -213,13 +213,15 @@ $memberPermissions = $dao->selectPermissionsByAlliance($alliance);
 		
 		<link  href="http://fonts.googleapis.com/css?family=Metrophobic:regular" rel="stylesheet" type="text/css" />
 		
-		<script>
+		<script src="js/global.js"></script>
+		
+		<script type="text/javascript">
 			/**
 			 * Updates the row of an authentication request when its "action" dropdown value changes.
 			 * @param joinRequestId the ID of the join request
 			 */
 			function updateAuthRequestRow(joinRequestId){
-				var dropdown = document.getElementById("action" + joinRequestId);
+				var dropdown = $("action" + joinRequestId);
 				var selectedIndex = dropdown.selectedIndex;
 
 				//should the row be disabled?
@@ -235,10 +237,10 @@ $memberPermissions = $dao->selectPermissionsByAlliance($alliance);
 					bgColor = "transparent";
 				}
 				
-				//document.getElementById("submit" + joinRequestId).disabled = disableRow; //this is always disabled
-				document.getElementById("view" + joinRequestId).disabled = disableRow;
-				document.getElementById("admin" + joinRequestId).disabled = disableRow;
-				document.getElementById("authRow" + joinRequestId).style.backgroundColor = bgColor;
+				//$("submit" + joinRequestId).disabled = disableRow; //this is always disabled
+				$("view" + joinRequestId).disabled = disableRow;
+				$("admin" + joinRequestId).disabled = disableRow;
+				$("authRow" + joinRequestId).style.backgroundColor = bgColor;
 			}
 
 			/**
@@ -246,7 +248,7 @@ $memberPermissions = $dao->selectPermissionsByAlliance($alliance);
 			 * @param permissionId the permission ID of the player
 			 */
 			function toggleRevoke(permissionId){
-				var checkbox = document.getElementById("members_revoke" + permissionId);
+				var checkbox = $("members_revoke" + permissionId);
 				checkbox.checked = !checkbox.checked; //toggle checkbox
 
 				//is revoked checked?
@@ -260,10 +262,10 @@ $memberPermissions = $dao->selectPermissionsByAlliance($alliance);
 					bgColor = "transparent";
 				}
 				
-				//document.getElementById("members_submit" + permissionId).disabled = revoked; //this is always disabled
-				document.getElementById("members_view" + permissionId).disabled = revoked;
-				document.getElementById("members_admin" + permissionId).disabled = revoked;
-				document.getElementById("members_row" + permissionId).style.backgroundColor = bgColor;
+				//$("members_submit" + permissionId).disabled = revoked; //this is always disabled
+				$("members_view" + permissionId).disabled = revoked;
+				$("members_admin" + permissionId).disabled = revoked;
+				$("members_row" + permissionId).style.backgroundColor = bgColor;
 			}
 
 			/**
@@ -271,7 +273,7 @@ $memberPermissions = $dao->selectPermissionsByAlliance($alliance);
 			 * @param id the checkbox's ID 
 			 */
 			function toggleCheckbox(id){
-				var c = document.getElementById(id);
+				var c = $(id);
 				if (!c.disabled){
 					c.checked = !c.checked;
 				}
@@ -315,7 +317,7 @@ $memberPermissions = $dao->selectPermissionsByAlliance($alliance);
 					var input = inputElements[i];
 					if (input.type == "checkbox" && input.id.indexOf(revokePrefix) == 0 && input.checked){
 						var id = input.id.substring(revokePrefix.length);
-						var name = document.getElementById("members_name" + id).innerHTML;
+						var name = $("members_name" + id).innerHTML;
 						rejected.push(name);
 						if (id == <?php echo $playerPermissions->id?>){
 							//warn the player if he is revoking auth on himself
@@ -344,7 +346,7 @@ $memberPermissions = $dao->selectPermissionsByAlliance($alliance);
 				}
 
 				//warn the player if he is revoking his own admin privledges
-				var checkbox = document.getElementById("members_admin<?php echo $playerPermissions->id?>");
+				var checkbox = $("members_admin<?php echo $playerPermissions->id?>");
 				if (!checkbox.checked){
 					return confirm("You have chosen to revoke your own admin priviledges.  If you do this, you will no longer have access to this admin page.\n\nAre you sure you want to do this?");
 				}

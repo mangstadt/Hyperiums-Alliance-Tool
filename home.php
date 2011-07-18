@@ -103,6 +103,120 @@ $playerAlliances = $dao->selectPermissionsByPlayer($player);
 		<link  href="http://fonts.googleapis.com/css?family=Metrophobic:regular" rel="stylesheet" type="text/css" />
 
 	</head>
+	
+	<script src="js/global.js"></script>
+	
+	<script type="text/javascript">
+		/**
+		 * Adds commas to a number or returns "-" if the number is 0.
+		 * @param num the number
+		 * @return the number with commas or "-" if the number is 0
+		 */
+		function formatNum(num){
+			if (num == 0){
+				return "-";
+			}
+			return addCommas(num);
+		}
+
+		/**
+		 * Generates a HTML table for displaying the avgP bars.
+		 * @param avgP the avgP
+		 * @return the HTML table
+		 */
+		function generateAvgPBars(avgP){
+			var html = '<table cellspacing="1" cellpadding="1" border="0"><tr>';
+			
+			var blocks = [
+				[500000, 'pow22'],
+				[50000, 'pow21'],
+				[5000, 'pow20']
+			];
+			var mod = avgP;
+			for (var i = 0; i < blocks.length; i++){
+				var block = blocks[i];
+				var count = Math.floor(mod / block[0]);
+				for (var j = 0; j < count; j++){
+					html += '<td class="pow ' + block[1] + '"></td>';
+				}
+				mod = mod % block[0];
+			}
+
+			html += '</tr></table>';
+			return html;
+		}
+
+		/**
+		 * Formats the avgP for display.
+		 * @param avgP the avgP
+		 * @return the formatted avgP (example: "465.2K")
+		 */
+		function generateAvgPText(avgP){
+			if (avgP > 1000000) {
+				avgP = addCommas((avgP / 10000000).toFixed(1)) + "M";
+			} else if (avgP > 1000) {
+				avgP = addCommas((avgP / 1000).toFixed(1)) + "K";
+			}
+			return avgP;
+		}
+	
+		function prepareReport(){
+			$("prepareDiv").style.display = "none";
+			$("loading").style.display = "block";
+	
+			var xmlhttp = newXmlhttp();
+			xmlhttp.onreadystatechange = function(){
+				if (xmlhttp.readyState == 4){
+					$("loading").style.display = "none";
+					$("error").style.display = "none";
+					
+					if (xmlhttp.status == 200){
+						//parse response
+						var report = eval('(' + xmlhttp.responseText + ')');
+
+						//populate table with individual unit counts
+						$("azterkScouts").innerHTML = formatNum(report.azterkScouts);
+						$("azterkBombers").innerHTML = formatNum(report.azterkBombers);
+						$("azterkDestroyers").innerHTML = formatNum(report.azterkDestroyers);
+						$("azterkCruisers").innerHTML = formatNum(report.azterkCruisers);
+						$("azterkArmies").innerHTML = formatNum(report.azterkArmies);
+						$("humanScouts").innerHTML = formatNum(report.humanScouts);
+						$("humanBombers").innerHTML = formatNum(report.humanBombers);
+						$("humanDestroyers").innerHTML = formatNum(report.humanDestroyers);
+						$("humanCruisers").innerHTML = formatNum(report.humanCruisers);
+						$("humanArmies").innerHTML = formatNum(report.humanArmies);
+						$("xillorScouts").innerHTML = formatNum(report.xillorScouts);
+						$("xillorBombers").innerHTML = formatNum(report.xillorBombers);
+						$("xillorDestroyers").innerHTML = formatNum(report.xillorDestroyers);
+						$("xillorCruisers").innerHTML = formatNum(report.xillorCruisers);
+						$("xillorArmies").innerHTML = formatNum(report.xillorArmies);
+
+						//generate "avgP" bars
+						$("spaceAvgPBars").innerHTML = generateAvgPBars(report.avgSpaceP);
+						$("spaceAvgP").innerHTML = generateAvgPText(report.avgSpaceP);
+						$("groundAvgPBars").innerHTML = generateAvgPBars(report.avgGroundP);
+						$("groundAvgP").innerHTML = generateAvgPText(report.avgGroundP);
+	
+						$("report").style.display = "block";
+						$("submitDiv").style.display = "block";
+						
+					} else {
+						//error
+						$("error").style.display = "block";
+						$("error").innerHTML = "Error generating report: HTTP " + xmlhttp.status + " " + xmlhttp.statusText + "<br />" + xmlhttp.responseText;
+						$("prepareDiv").style.display = "block";
+					}
+				}
+			};
+			
+			xmlhttp.open("GET","ajax.php?method=report", true);
+			xmlhttp.send();
+		}
+
+		function submitReport(){
+			alert('Coming soon...');
+		}
+	</script>
 
 
 	<body>
@@ -196,6 +310,128 @@ $playerAlliances = $dao->selectPermissionsByPlayer($player);
 						endif;
 						?>
 					</div>
+				</div>
+				
+				<div class="block">
+					<h1>Submit Report</h1>
+					<div>
+						<p>Upload your fleet, trading, and infiltration data to your alliances.
+						You will be able to view your report before it is submitted.</p>
+						
+						<?php
+						if (count($playerAlliances) == 0):
+							?>
+							<div align="center" id="prepareDiv">
+								<i>Not a member of an alliance.</i><br />
+								<button class="button" id="prepareButton" disabled="disabled">Prepare Report</button>
+							</div>
+							<?php
+						else: 
+							?>
+							<div id="error" style="color:red; display:none"></div>
+							
+							<div align="center" id="loading" style="display:none">
+								<img src="img/loading.gif" /><br />
+								Please wait while your report is generated...
+							</div>
+							
+							<div id="report" style="display:none">
+								<b>Fleet Report</b>
+								
+								<table cellspacing="10">
+									<tr>
+										<td>
+											<table cellspacing="1" cellpadding="0" border="0">
+												<tbody>
+													<tr>
+														<td width="180"></td>
+														<td width="50" class="hc"><font color="#AAAA77"
+															face="verdana,arial" size="1"><img
+															src="img/race_human.gif" border="0"></font></td>
+														<td width="50" class="hc"><font color="#AAAA77"
+															face="verdana,arial" size="1"><img
+															src="img/race_azterk.gif" border="0"></font></td>
+														<td width="50" class="hc"><font color="#AAAA77"
+															face="verdana,arial" size="1"><img
+															src="img/race_xillor.gif" border="0"></font></td>
+														<td></td>
+													</tr>
+													<tr>
+														<td><img src="img/cruiser.gif"> Cruisers</td>
+														<td class="hc" id="humanCruisers"></td>
+														<td class="hc" id="azterkCruisers"></td>
+														<td class="hc" id="xillorCruisers"></td>
+														<td></td>
+													</tr>
+													<tr>
+														<td bgcolor="#222233"><img src="img/destroyer.gif"> Destroyers</td>
+														<td bgcolor="#222233" class="hc" id="humanDestroyers"></td>
+														<td bgcolor="#222233" class="hc" id="azterkDestroyers"></td>
+														<td bgcolor="#222233" class="hc" id="xillorDestroyers"></td>
+														<td></td>
+													</tr>
+													<tr>
+														<td><img src="img/scout.gif"> Scouts</td>
+														<td class="hc" id="humanScouts"></td>
+														<td class="hc" id="azterkScouts"></td>
+														<td class="hc" id="xillorScouts"></td>
+														<td></td>
+													</tr>
+													<tr>
+														<td bgcolor="#222233"><img src="img/bomber.gif"> Bombers</td>
+														<td bgcolor="#222233" class="hc" id="humanBombers"></td>
+														<td bgcolor="#222233" class="hc" id="azterkBombers"></td>
+														<td bgcolor="#222233" class="hc" id="xillorBombers"></td>
+														<td></td>
+													</tr>
+													<tr>
+														<td><img src="img/army.gif"> Armies</td>
+														<td class="hc" id="humanArmies"></td>
+														<td class="hc" id="azterkArmies"></td>
+														<td class="hc" id="xillorArmies"></td>
+														<td></td>
+													</tr>
+												</tbody>
+											</table>
+										</td>
+										<td>
+											<table cellspacing="1" cellpadding="1" border="0">
+												<tr>
+													<td>Space AvgP:</td>
+													<td id="spaceAvgPBars"></td>
+													<td id="spaceAvgP"></td>
+												</tr>
+												<tr>
+													<td>Ground AvgP:</td>
+													<td id="groundAvgPBars"></td>
+													<td id="groundAvgP"></td>
+												</tr>
+											</table>
+										</td>
+									</tr>
+								</table>
+								<br /><br />
+								
+								<b>Trade Report</b><br />
+								<i>Coming soon...</i><br />
+								<br />
+								
+								<b>Infiltration Report</b><br />
+								<i>Coming soon...</i><br />
+							</div>
+							
+							<div align="center" id="prepareDiv">
+								<!-- Last submission: ?<br /> -->
+								<button class="button" id="prepareButton" onclick="prepareReport()">Prepare Report</button>
+							</div>
+							
+							<div align="center" style="display:none" id="submitDiv">
+								<button class="button" id="submitButton" onclick="submitReport()">Submit Report</button>
+							</div>
+						</div>
+						<?php 
+					endif;
+					?>
 				</div>
 				
 				<div class="block">
