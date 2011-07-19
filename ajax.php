@@ -4,19 +4,23 @@
  */
 
 require_once 'lib/bootstrap.php';
-use HAPI\HAPI;
 use ajax\Report;
+use db\HypToolsMockDao;
+use db\HypToolsMySqlDao;
+use db\Fleet;
+use HAPI\HAPI;
 
 //has the player logged in?
 if (!Session::isLoggedIn()){
 	header('', true, 400);
+	echo 'Not logged in.';
 	exit();
 }
 
 $hapi = Session::getHapi();
 $player = Session::getPlayer();
 $mock = Session::isMockEnabled();
-//$dao = $mock ? new HypToolsMockDao($player->game) : new HypToolsMySqlDao($player->game);
+$dao = $mock ? new HypToolsMockDao($player->game) : new HypToolsMySqlDao($player->game);
 
 $method = @$_REQUEST['method'];
 if ($method == 'report'){
@@ -77,7 +81,62 @@ if ($method == 'report'){
 	$report->avgSpaceP += $report->xillorCruisers * AvgP::XILLOR_CRUISER;
 	$report->avgGroundP += $report->xillorArmies * AvgP::XILLOR_ARMY;
 	
+	//send response
 	echo json_encode($report);
+} else if ($method == 'submit'){
+	//get fleet info that was retrieved when the report was generated
+	$hapiFleetsInfo = Session::getHapiFleetsInfo();
+	if ($hapiFleetsInfo == null){
+		header('', true, 400);
+		echo 'Report has not been generated.';
+		exit();
+	}
+	
+	//build Fleet object
+	$fleet = new Fleet();
+	foreach ($hapiFleetsInfo as $hapiFleetInfo){
+		$hapiFleets = $hapiFleetInfo->getFleets();
+		foreach ($hapiFleets as $hapiFleet){
+			$fleet->player = $player;
+			$race = $hapiFleet->getRace();
+			if ($race == HAPI::RACE_AZTERK){
+				$fleet->azterkScouts += $hapiFleet->getScouts();
+				$fleet->azterkBombers += $hapiFleet->getBombers();
+				$fleet->azterkDestroyers += $hapiFleet->getDestroyers();
+				$fleet->azterkCruisers += $hapiFleet->getCruisers();
+				$fleet->azterkArmies += $hapiFleet->getGroundArmies();
+				$fleet->azterkArmies += $hapiFleet->getCarriedArmies();
+			} else if ($race == HAPI::RACE_HUMAN){
+				$fleet->humanScouts += $hapiFleet->getScouts();
+				$fleet->humanBombers += $hapiFleet->getBombers();
+				$fleet->humanDestroyers += $hapiFleet->getDestroyers();
+				$fleet->humanCruisers += $hapiFleet->getCruisers();
+				$fleet->humanArmies += $hapiFleet->getGroundArmies();
+				$fleet->humanArmies += $hapiFleet->getCarriedArmies();
+			} else if ($race == HAPI::RACE_XILLOR){
+				$fleet->xillorScouts += $hapiFleet->getScouts();
+				$fleet->xillorBombers += $hapiFleet->getBombers();
+				$fleet->xillorDestroyers += $hapiFleet->getDestroyers();
+				$fleet->xillorCruisers += $hapiFleet->getCruisers();
+				$fleet->xillorArmies += $hapiFleet->getGroundArmies();
+				$fleet->xillorArmies += $hapiFleet->getCarriedArmies();
+			}
+		}
+	}
+	
+	//save to database
+	$dao->beginTransaction();
+	try{
+		$dao->deleteFleetsByPlayer($player);
+		$dao->insertFleet($fleet);
+		$dao->insertSubmitLog($player);
+		$dao->commit();
+	} catch (Exception $e){
+		$dao->rollBack();
+		throw $e;
+	}
+	sleep(2);
 } else {
 	header('', true, 400);
+	echo "Method named \"$method\" does not exist.";
 }

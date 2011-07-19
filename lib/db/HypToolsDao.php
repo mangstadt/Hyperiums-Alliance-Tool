@@ -183,6 +183,31 @@ interface HypToolsDao{
 	public function selectJoinLogsByPlayer(Player $player);
 	
 	/**
+	 * Deletes all fleet reports belonging to a player.
+	 * @param Player $player the player
+	 */
+	public function deleteFleetsByPlayer(Player $player);
+	
+	/**
+	 * Inserts a new fleet report.
+	 * @param Fleet $fleet the fleet report
+	 */
+	public function insertFleet(Fleet $fleet);
+	
+	/**
+	 * Inserts a new submit log.
+	 * @param Player $player the player who submitted the report
+	 */
+	public function insertSubmitLog(Player $player);
+	
+	/**
+	 * Gets the last submit log entry of the last submission the player made.
+	 * @param Player $player the player
+	 * @return SubmitLog the last submit log entry or null if the player never submitted a report
+	 */
+	public function selectLastPlayerSubmitLog(Player $player);
+	
+	/**
 	 * Wipes the database.
 	 */
 	public function dropAllTables();

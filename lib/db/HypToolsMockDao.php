@@ -9,23 +9,29 @@ use \DateTime;
  * @author mangstadt
  */
 class HypToolsMockDao implements HypToolsDao{
-	private $games = array();
-	private $gamesNextId = 1;
+	private $games;
+	private $gamesNextId;
 	
-	private $alliances = array();
-	private $alliancesNextId = 1;
+	private $alliances;
+	private $alliancesNextId;
 	
-	private $players = array();
-	private $playersNextId = 1;
+	private $players;
+	private $playersNextId;
 	
-	private $permissions = array();
-	private $permissionsNextId = 1;
+	private $permissions;
+	private $permissionsNextId;
 	
-	private $joinRequests = array();
-	private $joinRequestsNextId = 1;
+	private $joinRequests;
+	private $joinRequestsNextId;
 	
-	private $joinLogs = array();
-	private $joinLogsNextId = 1;
+	private $joinLogs;
+	private $joinLogsNextId;
+	
+	private $fleets;
+	private $fleetsNextId;
+	
+	private $submitLogs;
+	private $submitLogsNextId;
 	
 	/**
 	 * The game that the player is logged into.
@@ -59,8 +65,14 @@ class HypToolsMockDao implements HypToolsDao{
 			$this->joinRequestsNextId = $_SESSION['mock_joinRequestsNextId'];
 			$this->joinLogs = $_SESSION['mock_joinLogs'];
 			$this->joinLogsNextId = $_SESSION['mock_joinLogsNextId'];
+			$this->fleets = $_SESSION['mock_fleets'];
+			$this->fleetsNextId = $_SESSION['mock_fleetsNextId'];
+			$this->submitLogs = $_SESSION['mock_submitLogs'];
+			$this->submitLogsNextId = $_SESSION['mock_submitLogsNextId'];
 		} else {
 			//session just started, create initial data
+			
+			$this->init();
 			
 			$game = new Game();
 			$game->id = $this->gamesNextId++;
@@ -269,6 +281,36 @@ class HypToolsMockDao implements HypToolsDao{
 		$_SESSION['mock_joinRequestsNextId'] = $this->joinRequestsNextId;
 		$_SESSION['mock_joinLogs'] = $this->joinLogs;
 		$_SESSION['mock_joinLogsNextId'] = $this->joinLogsNextId;
+		$_SESSION['mock_fleets'] = $this->fleets;
+		$_SESSION['mock_fleetsNextId'] = $this->fleetsNextId;
+		$_SESSION['mock_submitLogs'] = $this->submitLogs;
+		$_SESSION['mock_submitLogsNextId'] = $this->submitLogsNextId;
+	}
+	
+	private function init(){
+		$this->games = array();
+		$this->gamesNextId = 1;
+		
+		$this->alliances = array();
+		$this->alliancesNextId = 1;
+		
+		$this->players = array();
+		$this->playersNextId = 1;
+		
+		$this->permissions = array();
+		$this->permissionsNextId = 1;
+		
+		$this->joinRequests = array();
+		$this->joinRequestsNextId = 1;
+		
+		$this->joinLogs = array();
+		$this->joinLogsNextId = 1;
+		
+		$this->fleets = array();
+		$this->fleetsNextId = 1;
+		
+		$this->submitLogs = array();
+		$this->submitLogsNextId = 1;
 	}
 
 	//override
@@ -561,23 +603,7 @@ class HypToolsMockDao implements HypToolsDao{
 
 	//override
 	public function dropAllTables(){
-		$this->games = array();
-		$this->gamesNextId = 1;
-		
-		$this->alliances = array();
-		$this->alliancesNextId = 1;
-		
-		$this->players = array();
-		$this->playersNextId = 1;
-		
-		$this->permissions = array();
-		$this->permissionsNextId = 1;
-		
-		$this->joinRequests = array();
-		$this->joinRequestsNextId = 1;
-		
-		$this->joinLogs = array();
-		$this->joinLogsNextId = 1;
+		$this->init();
 	}
 
 	//override
@@ -604,6 +630,43 @@ class HypToolsMockDao implements HypToolsDao{
 		$j->event = $event;
 		$j->eventDate = new DateTime("now");
 		$this->joinLogs[] = $j;
+	}
+	
+	//override
+	public function deleteFleetsByPlayer(Player $player){
+		foreach ($this->fleets as $i=>$fleet){
+			if ($fleet->player->id == $player->id){
+				unset($this->fleets[$i]);
+			}
+		}
+	}
+	
+	//override
+	public function insertFleet(Fleet $fleet){
+		$fleet->id = $this->fleetsNextId++;
+		$this->fleets[] = $fleet;
+	}
+	
+	//override
+	public function insertSubmitLog(Player $player){
+		$s = new SubmitLog();
+		$s->id = $this->submitLogsNextId++;
+		$s->player = $player;
+		$s->submitDate = new DateTime("now");
+		$this->submitLogs[] = $s;
+	}
+	
+	//override
+	public function selectLastPlayerSubmitLog(Player $player){
+		$cur = null;
+		foreach ($this->submitLogs as $s){
+			if ($s->player->id == $player->id){
+				if ($cur == null || $s->submitDate->getTimestamp() > $cur->submitDate->getTimestamp()){
+					$cur = $s;
+				}
+			}
+		}
+		return $cur;
 	}
 
 	//override

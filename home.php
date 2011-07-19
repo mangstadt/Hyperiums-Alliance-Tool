@@ -89,6 +89,9 @@ $playerJoinRequests = $dao->selectJoinRequestsByPlayer($player);
 //get the alliances the player belongs to
 $playerAlliances = $dao->selectPermissionsByPlayer($player);
 
+//get the time the player last submitted a report
+$submitLog = $dao->selectLastPlayerSubmitLog($player);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -153,7 +156,7 @@ $playerAlliances = $dao->selectPermissionsByPlayer($player);
 		 */
 		function generateAvgPText(avgP){
 			if (avgP > 1000000) {
-				avgP = addCommas((avgP / 10000000).toFixed(1)) + "M";
+				avgP = addCommas((avgP / 1000000).toFixed(1)) + "M";
 			} else if (avgP > 1000) {
 				avgP = addCommas((avgP / 1000).toFixed(1)) + "K";
 			}
@@ -163,6 +166,7 @@ $playerAlliances = $dao->selectPermissionsByPlayer($player);
 		function prepareReport(){
 			$("prepareDiv").style.display = "none";
 			$("loading").style.display = "block";
+			$("loadingMessage").innerHTML = "Please wait while your report is generated...";
 	
 			var xmlhttp = newXmlhttp();
 			xmlhttp.onreadystatechange = function(){
@@ -214,7 +218,30 @@ $playerAlliances = $dao->selectPermissionsByPlayer($player);
 		}
 
 		function submitReport(){
-			alert('Coming soon...');
+			$("submitDiv").style.display = "none";
+			$("loading").style.display = "block";
+			$("loadingMessage").innerHTML = "Submitting report...";
+
+			var xmlhttp = newXmlhttp();
+			xmlhttp.onreadystatechange = function(){
+				if (xmlhttp.readyState == 4){
+					$("loading").style.display = "none";
+					$("error").style.display = "none";
+					
+					if (xmlhttp.status == 200){
+						$("message").innerHTML = '<img src="img/checkmark.png" />Submission complete';
+						$("message").style.display = "block";
+					} else {
+						//error
+						$("error").style.display = "block";
+						$("error").innerHTML = "Error submitting report: HTTP " + xmlhttp.status + " " + xmlhttp.statusText + "<br />" + xmlhttp.responseText;
+						$("submitDiv").style.display = "block";
+					}
+				}
+			};
+			
+			xmlhttp.open("POST","ajax.php?method=submit", true);
+			xmlhttp.send();
 		}
 	</script>
 
@@ -328,13 +355,6 @@ $playerAlliances = $dao->selectPermissionsByPlayer($player);
 							<?php
 						else: 
 							?>
-							<div id="error" style="color:red; display:none"></div>
-							
-							<div align="center" id="loading" style="display:none">
-								<img src="img/loading.gif" /><br />
-								Please wait while your report is generated...
-							</div>
-							
 							<div id="report" style="display:none">
 								<b>Fleet Report</b>
 								
@@ -420,8 +440,23 @@ $playerAlliances = $dao->selectPermissionsByPlayer($player);
 								<i>Coming soon...</i><br />
 							</div>
 							
+							<div align="center" id="message"></div>
+							
+							<div id="error" style="color:red; display:none"></div>
+							
+							<div align="center" id="loading" style="display:none">
+								<img src="img/loading.gif" />
+								<div id="loadingMessage"></div>
+							</div>
+							
 							<div align="center" id="prepareDiv">
-								<!-- Last submission: ?<br /> -->
+								<?php
+								if ($submitLog != null):
+									?>
+									Last submission: <?php echo htmlspecialchars($submitLog->submitDate->format('Y-m-d G:i T'))?><br />
+									<?php 
+								endif;
+								?>
 								<button class="button" id="prepareButton" onclick="prepareReport()">Prepare Report</button>
 							</div>
 							

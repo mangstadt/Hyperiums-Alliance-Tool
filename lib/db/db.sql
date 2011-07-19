@@ -110,3 +110,41 @@ CREATE TABLE IF NOT EXISTS permissions(
 	*/
 	perms INT NOT NULL DEFAULT 0
 );
+
+--The fleet reports of the players.
+CREATE TABLE IF NOT EXISTS fleets(
+	fleetId INT PRIMARY KEY AUTO_INCREMENT,
+	
+	--the player
+	playerId INT NOT NULL REFERENCES players(playerId),
+	
+	azterkScouts INT NOT NULL,
+	azterkBombers INT NOT NULL,
+	azterkDestroyers INT NOT NULL,
+	azterkCruisers INT NOT NULL,
+	azterkArmies INT NOT NULL,
+	
+	humanScouts INT NOT NULL,
+	humanBombers INT NOT NULL,
+	humanDestroyers INT NOT NULL,
+	humanCruisers INT NOT NULL,
+	humanArmies INT NOT NULL,
+	
+	xillorScouts INT NOT NULL,
+	xillorBombers INT NOT NULL,
+	xillorDestroyers INT NOT NULL,
+	xillorCruisers INT NOT NULL,
+	xillorArmies INT NOT NULL
+);
+
+--Keeps track of each time the player submits a report.
+CREATE TABLE IF NOT EXISTS submitLogs(
+	submitLogId INT PRIMARY KEY AUTO_INCREMENT,
+	
+	--the player
+	playerId INT NOT NULL REFERENCES players(playerId),
+	
+	--the date the player submitted a report
+	submitDate DATETIME NOT NULL
+);
+

@@ -749,6 +749,69 @@ class HypToolsMySqlDao implements HypToolsDao{
 	}
 	
 	//override
+	public function deleteFleetsByPlayer(Player $player){
+		$sql = "DELETE FROM fleets WHERE playerId = :playerId";
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindValue(":playerId", $player->id, PDO::PARAM_INT);
+		$stmt->execute();
+	}
+	
+	//override
+	public function insertFleet(Fleet $fleet){
+		$sql = "INSERT INTO fleets
+		( playerId,  azterkScouts,  azterkBombers,  azterkDestroyers,  azterkCruisers,  azterkArmies,  humanScouts,  humanBombers,  humanDestroyers,  humanCruisers,  humanArmies, 	xillorScouts,  xillorBombers,  xillorDestroyers,  xillorCruisers, 	xillorArmies) VALUES
+		(:playerId, :azterkScouts, :azterkBombers, :azterkDestroyers, :azterkCruisers, :azterkArmies, :humanScouts, :humanBombers, :humanDestroyers, :humanCruisers, :humanArmies,	:xillorScouts, :xillorBombers, :xillorDestroyers, :xillorCruisers,	:xillorArmies)
+		";
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindValue(":playerId", $fleet->player->id, PDO::PARAM_INT);
+		$stmt->bindValue(":azterkScouts", $fleet->azterkScouts, PDO::PARAM_INT);
+		$stmt->bindValue(":azterkBombers", $fleet->azterkBombers, PDO::PARAM_INT);
+		$stmt->bindValue(":azterkDestroyers", $fleet->azterkDestroyers, PDO::PARAM_INT);
+		$stmt->bindValue(":azterkCruisers", $fleet->azterkCruisers, PDO::PARAM_INT);
+		$stmt->bindValue(":azterkArmies", $fleet->azterkArmies, PDO::PARAM_INT);
+		$stmt->bindValue(":humanScouts", $fleet->humanScouts, PDO::PARAM_INT);
+		$stmt->bindValue(":humanBombers", $fleet->humanBombers, PDO::PARAM_INT);
+		$stmt->bindValue(":humanDestroyers", $fleet->humanDestroyers, PDO::PARAM_INT);
+		$stmt->bindValue(":humanCruisers", $fleet->humanCruisers, PDO::PARAM_INT);
+		$stmt->bindValue(":humanArmies", $fleet->humanArmies, PDO::PARAM_INT);
+		$stmt->bindValue(":xillorScouts", $fleet->xillorScouts, PDO::PARAM_INT);
+		$stmt->bindValue(":xillorBombers", $fleet->xillorBombers, PDO::PARAM_INT);
+		$stmt->bindValue(":xillorDestroyers", $fleet->xillorDestroyers, PDO::PARAM_INT);
+		$stmt->bindValue(":xillorCruisers", $fleet->xillorCruisers, PDO::PARAM_INT);
+		$stmt->bindValue(":xillorArmies", $fleet->xillorArmies, PDO::PARAM_INT);
+		$stmt->execute();
+		
+		$fleet->id = $this->db->lastInsertId();
+	}
+	
+	//override
+	public function insertSubmitLog(Player $player){
+		$sql = "INSERT INTO submitLogs
+		( playerId, submitDate) VALUES
+		(:playerId, Now())
+		";
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindValue(":playerId", $player->id, PDO::PARAM_INT);
+		$stmt->execute();
+	}
+	
+	//override
+	public function selectLastPlayerSubmitLog(Player $player){
+		$sql = "SELECT * FROM submitLogs WHERE playerId = :playerId ORDER BY submitDate DESC LIMIT 1";
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindValue(":playerId", $player->id, PDO::PARAM_INT);
+		$stmt->execute();
+		if ($row = $stmt->fetch()){
+			$s = new SubmitLog();
+			$s->id = $row['submitLogId'];
+			$s->player = $player; //TODO lazy
+			$s->submitDate = $this->date($row['submitDate']);
+			return $s;
+		}
+		return null;
+	}
+	
+	//override
 	public function beginTransaction(){
 		$this->db->beginTransaction();
 	}

@@ -1,11 +1,15 @@
 <?php
-namespace ajax;
+namespace db;
 
 /**
- * Represents an AJAX response to the report-generation request.
- * @author mangst
+ * A row from the "fleets" table.
+ * @author mangstadt
  */
-class Report{
+class Fleet{
+	public $id;
+	
+	public $player;
+	
 	public $azterkScouts = 0;
 	public $azterkBombers = 0;
 	public $azterkDestroyers = 0;
@@ -23,7 +27,4 @@ class Report{
 	public $xillorDestroyers = 0;
 	public $xillorCruisers = 0;
 	public $xillorArmies = 0;
-	
-	public $avgSpaceP = 0;
-	public $avgGroundP = 0;
 }
