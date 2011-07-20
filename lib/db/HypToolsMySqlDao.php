@@ -627,7 +627,7 @@ class HypToolsMySqlDao implements HypToolsDao{
 	public function dropAllTables(){
 		$this->beginTransaction();
 		try{
-			$tables = array("permissions", "joinRequests", "joinLogs", "alliances", "players", "games");
+			$tables = array("submitLogs", "fleets", "permissions", "joinRequests", "joinLogs", "alliances", "players", "games");
 			foreach ($tables as $t){
 				$this->db->exec("DROP TABLE IF EXISTS $t");
 			}
