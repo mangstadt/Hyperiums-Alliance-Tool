@@ -515,20 +515,22 @@ function doUpdateAlliances(){
 	
 	//find the data files
 	$handler = opendir(__DIR__);
-	$dataFiles = array();
+	$mostRecent = array();
 	while ($file = readdir($handler)) {
 		if (preg_match("/^(.*?)-(.*?)-alliances\\.txt\\.gz\$/", $file, $matches)){
 			$game = $matches[1];
 			$date = new DateTime($matches[2]);
-			$dataFiles[] = array(
-				'game'=>$game,
-				'date'=>$date,
-				'file'=>$file
-			);
+			if (!isset($mostRecent[$game]) || $date->getTimestamp() > $mostRecent[$game]['date']->getTimestamp()){
+				$mostRecent[$game] = array(
+					'game'=>$game,
+					'date'=>$date,
+					'file'=>$file
+				);
+			}
 		}
 	}
 	
-	if (count($dataFiles) == 0){
+	if (count($mostRecent) == 0){
 		$response['status'] = 500;
 		$response['errors'][] = 'No data files found.  Files must be in the format: "<gamename>-<yyymmdd>-alliances.txt.gz"';
 		return $response;
@@ -540,9 +542,10 @@ function doUpdateAlliances(){
 	//init the DAO
 	$dao = new HypToolsMySqlDao();
 
-	foreach ($dataFiles as $dataFile){
+	foreach ($mostRecent as $dataFile){
 		$gameName = $dataFile['game'];
 		$file = $dataFile['file'];
+		$date = $dataFile['date'];
 		
 		//make sure the game exists
 		$game = null;
@@ -574,7 +577,7 @@ function doUpdateAlliances(){
 			$dao->rollBack();
 			throw $e;
 		}
-		$response['processed'][] = array('count'=>$num, 'file'=>$file);
+		$response['processed'][] = array('count'=>$num, 'file'=>$file, 'date'=>$date->getTimestamp());
 	}
 	
 	return $response;
