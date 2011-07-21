@@ -38,3 +38,25 @@ function newXmlhttp(){
 		return new ActiveXObject("Microsoft.XMLHTTP");
 	}
 }
+
+/**
+ * Generates a query string from a list of parameters.
+ * @param params an object where each field is a parameter
+ * @return the query string
+ */
+function queryString(params){
+	var q = "";
+	
+	for (p in params){
+		var key = p;
+		var value = params[p];
+		q += encodeURIComponent(key) + "=" + encodeURIComponent(value) + "&";
+	}
+	
+	if (q.length > 0){
+		//trim trailing "&"
+		q = q.substring(0, q.length-1);
+	}
+	
+	return q;
+}
