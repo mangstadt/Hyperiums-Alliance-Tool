@@ -73,6 +73,19 @@ $games = Cache::getGamesList();
 	};
 
 	/**
+	 * Escapes a string for HTML.
+	 * @return the escaped string
+	 */
+	String.prototype.escapeHTML = function () {                                        
+		return(                                                                 
+			this.replace(/&/g,'&amp;').                                         
+			replace(/>/g,'&gt;').                                           
+			replace(/</g,'&lt;').                                           
+			replace(/"/g,'&quot;')                                         
+		);                                                                
+	};
+
+	/**
 	 * Updates the alliance data in the database.
 	 */
 	function updateAlliances(){
@@ -100,7 +113,7 @@ $games = Cache::getGamesList();
 							msg += '<font color="red">';
 							for (var i = 0; i < response.errors.length; i++){
 								var e = response.errors[i];
-								msg += 'Error: ' + e + '<br />';
+								msg += 'Error: ' + e.escapeHTML() + '<br />';
 							}
 							msg += '</font>';
 						}
@@ -109,7 +122,7 @@ $games = Cache::getGamesList();
 							msg += '<font color="orange">';
 							for (var i = 0; i < response.warnings.length; i++){
 								var w = response.warnings[i];
-								msg += 'Warning: ' + w + '<br />';
+								msg += 'Warning: ' + w.escapeHTML() + '<br />';
 							}
 							msg += '</font>';
 						}
@@ -117,7 +130,7 @@ $games = Cache::getGamesList();
 						if (response.processed){
 							for (var i = 0; i < response.processed.length; i++){
 								var p = response.processed[i];
-								msg += '<img src="img/checkmark-sml.png" /> Processed <b>' + p.count + '</b> alliances in file <b>' + p.file + '</b>.<br />';
+								msg += '<img src="img/checkmark-sml.png" /> Processed <b>' + p.count + '</b> alliances in file <b>' + p.file.escapeHTML() + '</b>.<br />';
 							}
 						}
 						
@@ -126,7 +139,7 @@ $games = Cache::getGamesList();
 							msg += '<font color="red">';
 							for (var i = 0; i < response.errors.length; i++){
 								var e = response.errors[i];
-								msg += 'Error: ' + e + '<br />';
+								msg += 'Error: ' + e.escapeHTML() + '<br />';
 							}
 							msg += '</font>';
 						}
@@ -177,7 +190,7 @@ $games = Cache::getGamesList();
 							msg += '<font color="red">';
 							for (var i = 0; i < response.errors.length; i++){
 								var e = response.errors[i];
-								msg += 'Error: ' + e + '<br />';
+								msg += 'Error: ' + e.escapeHTML() + '<br />';
 							}
 							msg += '</font>';
 						}
@@ -186,7 +199,7 @@ $games = Cache::getGamesList();
 							msg += '<font color="orange">';
 							for (var i = 0; i < response.warnings.length; i++){
 								var w = response.warnings[i];
-								msg += 'Warning: ' + w + '<br />';
+								msg += 'Warning: ' + w.escapeHTML() + '<br />';
 							}
 							msg += '</font>';
 						}
@@ -194,14 +207,14 @@ $games = Cache::getGamesList();
 						if (response.tag){
 							var player = response.player;
 							var tag = response.tag;
-							msg += '<img src="img/checkmark-sml.png" /> Player <b>' + player + '</b> is now the president of <b>[' + tag + ']</b>';
+							msg += '<img src="img/checkmark-sml.png" /> Player <b>' + player.escapeHTML() + '</b> is now the president of <b>[' + tag.escapeHTML() + ']</b>';
 						}
 					} else {
 						if (response.errors){
 							msg += '<font color="red">';
 							for (var i = 0; i < response.errors.length; i++){
 								var e = response.errors[i];
-								msg += 'Error: ' + e + '<br />';
+								msg += 'Error: ' + e.escapeHTML() + '<br />';
 							}
 							msg += '</font>';
 						}
@@ -260,7 +273,7 @@ $games = Cache::getGamesList();
 							msg += '<font color="red">';
 							for (var i = 0; i < response.errors.length; i++){
 								var e = response.errors[i];
-								msg += 'Error: ' + e + '<br />';
+								msg += 'Error: ' + e.escapeHTML() + '<br />';
 							}
 							msg += '</font>';
 						}
@@ -269,7 +282,7 @@ $games = Cache::getGamesList();
 							msg += '<font color="orange">';
 							for (var i = 0; i < response.warnings.length; i++){
 								var w = response.warnings[i];
-								msg += 'Warning: ' + w + '<br />';
+								msg += 'Warning: ' + w.escapeHTML() + '<br />';
 							}
 							msg += '</font>';
 						}
@@ -279,9 +292,9 @@ $games = Cache::getGamesList();
 							var tag = response.tag;
 							msg += '<img src="img/checkmark-sml.png" /> ';
 							if (response.inserted){
-								msg += 'Player <b>' + player + '</b> is now a member of <b>[' + tag + ']</b>';
+								msg += 'Player <b>' + player.escapeHTML() + '</b> is now a member of <b>[' + tag.escapeHTML() + ']</b>';
 							} else {
-								msg += 'Updated permissions for player <b>' + player + '</b> in alliance <b>[' + tag + ']</b>';
+								msg += 'Updated permissions for player <b>' + player.escapeHTML() + '</b> in alliance <b>[' + tag.escapeHTML() + ']</b>';
 							}
 						}
 					} else {
@@ -289,7 +302,7 @@ $games = Cache::getGamesList();
 							msg += '<font color="red">';
 							for (var i = 0; i < response.errors.length; i++){
 								var e = response.errors[i];
-								msg += 'Error: ' + e + '<br />';
+								msg += 'Error: ' + e.escapeHTML() + '<br />';
 							}
 							msg += '</font>';
 						}
@@ -345,7 +358,7 @@ $games = Cache::getGamesList();
 							msg += '<font color="red">';
 							for (var i = 0; i < response.errors.length; i++){
 								var e = response.errors[i];
-								msg += 'Error: ' + e + '<br />';
+								msg += 'Error: ' + e.escapeHTML() + '<br />';
 							}
 							msg += '</font>';
 						}
@@ -354,7 +367,7 @@ $games = Cache::getGamesList();
 							msg += '<font color="orange">';
 							for (var i = 0; i < response.warnings.length; i++){
 								var w = response.warnings[i];
-								msg += 'Warning: ' + w + '<br />';
+								msg += 'Warning: ' + w.escapeHTML() + '<br />';
 							}
 							msg += '</font>';
 						}
@@ -367,7 +380,7 @@ $games = Cache::getGamesList();
 							msg += '<font color="red">';
 							for (var i = 0; i < response.errors.length; i++){
 								var e = response.errors[i];
-								msg += 'Error: ' + e + '<br />';
+								msg += 'Error: ' + e.escapeHTML() + '<br />';
 							}
 							msg += '</font>';
 						}
