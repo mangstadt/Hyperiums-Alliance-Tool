@@ -648,6 +648,23 @@ class HypToolsMockDao implements HypToolsDao{
 	}
 	
 	//override
+	public function selectFleetsByAlliance(Alliance $alliance){
+		$fs = array();
+		foreach ($this->fleets as $f){
+			foreach ($this->permissions as $p){
+				if ($f->player->id == $p->player->id && $alliance->id == $p->alliance->id){
+					$fs[] = $f;
+				}
+			}
+		}
+		usort($fs, function($a, $b){
+			//sort by player name
+			return strcmp($a->player->name, $b->player->name);
+		});
+		return $fs;
+	}
+	
+	//override
 	public function insertSubmitLog(Player $player){
 		$s = new SubmitLog();
 		$s->id = $this->submitLogsNextId++;

@@ -786,6 +786,60 @@ class HypToolsMySqlDao implements HypToolsDao{
 	}
 	
 	//override
+	public function selectFleetsByAlliance(Alliance $alliance){
+		$fleets = array();
+		
+		$sql = "
+		SELECT f.*, pl.*, pl.name AS playerName, g.* FROM fleets f
+		INNER JOIN permissions p ON f.playerId = p.playerId
+		INNER JOIN players pl ON f.playerId = pl.playerId
+		INNER JOIN games g ON g.gameId = pl.gameId
+		WHERE p.allianceId = :allianceId
+		ORDER BY pl.name
+		";
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindValue(":allianceId", $alliance->id, PDO::PARAM_INT);
+		$stmt->execute();
+		while ($row = $stmt->fetch()){
+			$fleet = new Fleet();
+			$fleet->id = $row['fleetId'];
+			$fleet->submitDate = $this->date($row['submitDate']);
+			$fleet->azterkScouts = $row['azterkScouts'];
+			$fleet->azterkBombers = $row['azterkBombers'];
+			$fleet->azterkDestroyers = $row['azterkDestroyers'];
+			$fleet->azterkCruisers = $row['azterkCruisers'];
+			$fleet->azterkArmies = $row['azterkArmies'];
+			$fleet->humanScouts = $row['humanScouts'];
+			$fleet->humanBombers = $row['humanBombers'];
+			$fleet->humanDestroyers = $row['humanDestroyers'];
+			$fleet->humanCruisers = $row['humanCruisers'];
+			$fleet->humanArmies = $row['humanArmies'];
+			$fleet->xillorScouts = $row['xillorScouts'];
+			$fleet->xillorBombers = $row['xillorBombers'];
+			$fleet->xillorDestroyers = $row['xillorDestroyers'];
+			$fleet->xillorCruisers = $row['xillorCruisers'];
+			$fleet->xillorArmies = $row['xillorArmies'];
+			
+			$player = new Player();
+			$player->id = $row['playerId'];
+			$player->name = $row['playerName'];
+			$player->hypPlayerId = $row['hypPlayerId'];
+			$player->lastLoginDate = $this->date($row['lastLoginDate']);
+			$fleet->player = $player;
+			
+			$game = new Game();
+			$game->id = $row['gameId'];
+			$game->name = $row['name'];
+			$game->description = $row['description'];
+			$player->game = $game;
+			
+			$fleets[] = $fleet;
+		}
+		
+		return $fleets;
+	}
+	
+	//override
 	public function insertSubmitLog(Player $player){
 		$sql = "INSERT INTO submitLogs
 		( playerId, submitDate) VALUES

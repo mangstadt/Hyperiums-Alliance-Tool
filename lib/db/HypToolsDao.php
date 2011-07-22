@@ -195,6 +195,13 @@ interface HypToolsDao{
 	public function insertFleet(Fleet $fleet);
 	
 	/**
+	 * Gets the fleet reports of all players that belong to the given alliance, ordered by player name.
+	 * @param Alliance $alliance the alliance
+	 * @return array(Fleet) the fleet reports
+	 */
+	public function selectFleetsByAlliance(Alliance $alliance);
+	
+	/**
 	 * Inserts a new submit log.
 	 * @param Player $player the player who submitted the report
 	 */
