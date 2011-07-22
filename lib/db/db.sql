@@ -118,6 +118,8 @@ CREATE TABLE IF NOT EXISTS fleets(
 	--the player
 	playerId INT NOT NULL REFERENCES players(playerId),
 	
+	submitDate DATETIME NOT NULL,
+	
 	azterkScouts INT NOT NULL,
 	azterkBombers INT NOT NULL,
 	azterkDestroyers INT NOT NULL,

@@ -8,7 +8,15 @@ namespace db;
 class Fleet{
 	public $id;
 	
+	/**
+	 * @var Player
+	 */
 	public $player;
+	
+	/**
+	 * @var DateTime
+	 */
+	public $submitDate;
 	
 	public $azterkScouts = 0;
 	public $azterkBombers = 0;

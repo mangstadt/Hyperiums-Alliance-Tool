@@ -759,8 +759,8 @@ class HypToolsMySqlDao implements HypToolsDao{
 	//override
 	public function insertFleet(Fleet $fleet){
 		$sql = "INSERT INTO fleets
-		( playerId,  azterkScouts,  azterkBombers,  azterkDestroyers,  azterkCruisers,  azterkArmies,  humanScouts,  humanBombers,  humanDestroyers,  humanCruisers,  humanArmies, 	xillorScouts,  xillorBombers,  xillorDestroyers,  xillorCruisers, 	xillorArmies) VALUES
-		(:playerId, :azterkScouts, :azterkBombers, :azterkDestroyers, :azterkCruisers, :azterkArmies, :humanScouts, :humanBombers, :humanDestroyers, :humanCruisers, :humanArmies,	:xillorScouts, :xillorBombers, :xillorDestroyers, :xillorCruisers,	:xillorArmies)
+		( playerId, submitDate,  azterkScouts,  azterkBombers,  azterkDestroyers,  azterkCruisers,  azterkArmies,  humanScouts,  humanBombers,  humanDestroyers,  humanCruisers,  humanArmies, 	xillorScouts,  xillorBombers,  xillorDestroyers,  xillorCruisers, 	xillorArmies) VALUES
+		(:playerId, Now(),       :azterkScouts, :azterkBombers, :azterkDestroyers, :azterkCruisers, :azterkArmies, :humanScouts, :humanBombers, :humanDestroyers, :humanCruisers, :humanArmies,	:xillorScouts, :xillorBombers, :xillorDestroyers, :xillorCruisers,	:xillorArmies)
 		";
 		$stmt = $this->db->prepare($sql);
 		$stmt->bindValue(":playerId", $fleet->player->id, PDO::PARAM_INT);
@@ -782,6 +782,7 @@ class HypToolsMySqlDao implements HypToolsDao{
 		$stmt->execute();
 		
 		$fleet->id = $this->db->lastInsertId();
+		$fleet->submitDate = new DateTime("now");
 	}
 	
 	//override
