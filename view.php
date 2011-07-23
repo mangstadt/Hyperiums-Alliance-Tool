@@ -258,16 +258,16 @@ function avgPTable(Fleet $fleet){
 	
 	$spaceAvgPText = $spaceAvgP;
 	if ($spaceAvgP > 1000000) {
-		$spaceAvgPText = number_format(round($spaceAvgP / 1000000, 1)) . "M";
+		$spaceAvgPText = number_format($spaceAvgP / 1000000, 1) . "M";
 	} else if ($spaceAvgP > 1000) {
-		$spaceAvgPText = number_format(round($spaceAvgP / 1000, 1)) . "K";
+		$spaceAvgPText = number_format($spaceAvgP / 1000, 1) . "K";
 	}
 	
 	$groundAvgPText = $groundAvgP;
 	if ($groundAvgP > 1000000) {
-		$groundAvgPText = number_format(round($groundAvgP / 1000000, 1)) . "M";
+		$groundAvgPText = number_format($groundAvgP / 1000000, 1) . "M";
 	} else if ($groundAvgP > 1000) {
-		$groundAvgPText = number_format(round($groundAvgP / 1000, 1)) . "K";
+		$groundAvgPText = number_format($groundAvgP / 1000, 1) . "K";
 	}
 	
 	ob_start();
@@ -313,41 +313,53 @@ function fleetTable(Fleet $fleet){
 			</tr>
 			<tr>
 				<td><img src="img/cruiser.gif"> Cruisers</td>
-				<td class="hc" id="humanCruisers"><?php echo $fleet->humanCruisers?></td>
-				<td class="hc" id="azterkCruisers"><?php echo $fleet->azterkCruisers?></td>
-				<td class="hc" id="xillorCruisers"><?php echo $fleet->xillorCruisers?></td>
+				<td class="hc" id="humanCruisers"><?php echo fleetTableFormat($fleet->humanCruisers)?></td>
+				<td class="hc" id="azterkCruisers"><?php echo fleetTableFormat($fleet->azterkCruisers)?></td>
+				<td class="hc" id="xillorCruisers"><?php echo fleetTableFormat($fleet->xillorCruisers)?></td>
 				<td></td>
 			</tr>
 			<tr>
 				<td bgcolor="#222233"><img src="img/destroyer.gif"> Destroyers</td>
-				<td bgcolor="#222233" class="hc" id="humanDestroyers"><?php echo $fleet->humanDestroyers?></td>
-				<td bgcolor="#222233" class="hc" id="azterkDestroyers"><?php echo $fleet->azterkDestroyers?></td>
-				<td bgcolor="#222233" class="hc" id="xillorDestroyers"><?php echo $fleet->xillorDestroyers?></td>
+				<td bgcolor="#222233" class="hc" id="humanDestroyers"><?php echo fleetTableFormat($fleet->humanDestroyers)?></td>
+				<td bgcolor="#222233" class="hc" id="azterkDestroyers"><?php echo fleetTableFormat($fleet->azterkDestroyers)?></td>
+				<td bgcolor="#222233" class="hc" id="xillorDestroyers"><?php echo fleetTableFormat($fleet->xillorDestroyers)?></td>
 				<td></td>
 			</tr>
 			<tr>
 				<td><img src="img/scout.gif"> Scouts</td>
-				<td class="hc" id="humanScouts"><?php echo $fleet->humanScouts?></td>
-				<td class="hc" id="azterkScouts"><?php echo $fleet->azterkScouts?></td>
-				<td class="hc" id="xillorScouts"><?php echo $fleet->xillorScouts?></td>
+				<td class="hc" id="humanScouts"><?php echo fleetTableFormat($fleet->humanScouts)?></td>
+				<td class="hc" id="azterkScouts"><?php echo fleetTableFormat($fleet->azterkScouts)?></td>
+				<td class="hc" id="xillorScouts"><?php echo fleetTableFormat($fleet->xillorScouts)?></td>
 				<td></td>
 			</tr>
 			<tr>
 				<td bgcolor="#222233"><img src="img/bomber.gif"> Bombers</td>
-				<td bgcolor="#222233" class="hc" id="humanBombers"><?php echo $fleet->humanBombers?></td>
-				<td bgcolor="#222233" class="hc" id="azterkBombers"><?php echo $fleet->azterkBombers?></td>
-				<td bgcolor="#222233" class="hc" id="xillorBombers"><?php $fleet->xillorBombers?></td>
+				<td bgcolor="#222233" class="hc" id="humanBombers"><?php echo fleetTableFormat($fleet->humanBombers)?></td>
+				<td bgcolor="#222233" class="hc" id="azterkBombers"><?php echo fleetTableFormat($fleet->azterkBombers)?></td>
+				<td bgcolor="#222233" class="hc" id="xillorBombers"><?php echo fleetTableFormat($fleet->xillorBombers)?></td>
 				<td></td>
 			</tr>
 			<tr>
 				<td><img src="img/army.gif"> Armies</td>
-				<td class="hc" id="humanArmies"><?php echo $fleet->humanArmies?></td>
-				<td class="hc" id="azterkArmies"><?php echo $fleet->azterkArmies?></td>
-				<td class="hc" id="xillorArmies"><?php echo $fleet->xillorArmies?></td>
+				<td class="hc" id="humanArmies"><?php echo fleetTableFormat($fleet->humanArmies)?></td>
+				<td class="hc" id="azterkArmies"><?php echo fleetTableFormat($fleet->azterkArmies)?></td>
+				<td class="hc" id="xillorArmies"><?php echo fleetTableFormat($fleet->xillorArmies)?></td>
 				<td></td>
 			</tr>
 		</tbody>
 	</table>
 	<?php
 	return ob_get_clean();
+}
+
+/**
+ * Formats a number for the fleet table.
+ * @param integer $num the number
+ * @return string the formatted number 
+ */
+function fleetTableFormat($num){
+	if ($num == 0){
+		return '-';
+	}
+	return number_format($num);
 }
