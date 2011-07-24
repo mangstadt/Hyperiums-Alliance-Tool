@@ -8,7 +8,7 @@
  */
 class Session{
 	public static function isLoggedIn(){
-		return self::getHapi() != null;
+		return self::isMockEnabled() !== null;
 	}
 	
 	public static function getHapi(){

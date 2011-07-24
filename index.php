@@ -5,18 +5,19 @@
 	use HAPI\Game;
 	use db\HypToolsMySqlDao;
 	use db\HypToolsMockDao;
+	use hapidao\HypToolsMockHapiDao;
+	use hapidao\HypToolsRealHapiDao;
 
 	$loggedOut = isset($_GET["loggedout"]);
 	
-	//get list of games
-	$games = Cache::getGamesList();
-	
 	$mock = isset($_REQUEST['mock']);
+	$hapiDao = $mock ? new HypToolsMockHapiDao() : new HypToolsRealHapiDao();
+	$games = $hapiDao->getGames();
 	
 	$errors = array();
 	if (count($_POST) > 0){
 		$login = trim($_POST["login_input"]);
-		$hkey = trim($_POST["hkey_input"]);
+		$hkey = trim(@$_POST["hkey_input"]);
 		$game_select = $_POST["game_select_input"];
 		
 		if (strlen($login) == 0){
@@ -26,29 +27,36 @@
 		if (!$mock && strlen($hkey) == 0){
 			$errors[] = 'You must specify a HAPI Key.';
 		}
+		
+		//find the game the user selected
+		$game = null; //HAPI\Game
+		foreach ($games as $g){
+			if (strcasecmp($g->getName(), $game_select) == 0){
+				$game = $g;
+				break;
+			}
+		}
+		if ($game == null){
+			$errors[] = "Invalid game: \"$game_select\".";
+		}
 
 		if (count($errors) == 0){
 			try{
-				//authenticate with Hyperiums
-				$hapi = $mock ? "hapi" : new HAPI($game_select, $login, $hkey, Env::$cacheDir . '/locks');
-				session_start();
-				Session::setHapi($hapi);
+				if ($mock){
+					$hapiDao->setPlayerIdentifier($login);
+				} else {
+					//authenticate with Hyperiums
+					$hapi = new HAPI($game_select, $login, $hkey, Env::$cacheDir . '/locks');
+					$hapiDao->setPlayerIdentifier($hapi);
+					Session::setHapi($hapi);
+				}
 				
 				Session::setMockEnabled($mock);
-				
-				//find the game the user selected
-				$game = null; //HAPI\Game
-				foreach ($games as $g){
-					if (strcasecmp($g->getName(), $game_select) == 0){
-						$game = $g;
-						break;
-					}
-				}
 				
 				//init the DAO
 				$dao = $mock ? new HypToolsMockDao($login) : new HypToolsMySqlDao();
 				
-				//insert game into DB
+				//insert game into DB if it's not there
 				$game = $dao->upsertGame($game->getName(), $game->getDescription());
 				
 				//give game to DAO
@@ -63,7 +71,7 @@
 				
 				header('Location: home.php');
 				exit();
-			} catch (\Exception $e){
+			} catch (Exception $e){
 				$errors[] = "Authentication failed with the following message: " . $e->getMessage();
 			}
 		}

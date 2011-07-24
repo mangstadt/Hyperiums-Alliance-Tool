@@ -1,10 +1,9 @@
 <?php
-use db;
 session_start();
 
 require_once '../lib/bootstrap.php';
-use HAPI\HAPI;
 use HAPI\Parsers\AllianceParser;
+use hapidao\HypToolsRealHapiDao;
 use db\HypToolsMySqlDao;
 use db\Permission;
 
@@ -55,7 +54,8 @@ if (isset($_GET['logout'])){
 	unset($_SESSION['loggedIn']);
 }
 
-$games = Cache::getGamesList();
+$hapiDao = new HypToolsRealHapiDao();
+$games = $hapiDao->getGames();
 
 ?>
 
@@ -550,7 +550,8 @@ function doUpdateAlliances(){
 	}
 	
 	//get all Hyperiums games
-	$games = Cache::getGamesList();
+	$hapiDao = new HypToolsRealHapiDao();
+	$games = $hapiDao->getGames();
 	
 	//init the DAO
 	$dao = new HypToolsMySqlDao();

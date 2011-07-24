@@ -9,6 +9,8 @@ use db\HypToolsMockDao;
 use db\HypToolsMySqlDao;
 use db\Fleet;
 use HAPI\HAPI;
+use hapidao\HypToolsRealHapiDao;
+use hapidao\HypToolsMockHapiDao;
 
 //has the player logged in?
 if (!Session::isLoggedIn()){
@@ -17,17 +19,17 @@ if (!Session::isLoggedIn()){
 	exit();
 }
 
-$hapi = Session::getHapi();
 $player = Session::getPlayer();
 $mock = Session::isMockEnabled();
 $dao = $mock ? new HypToolsMockDao($player->game) : new HypToolsMySqlDao($player->game);
+$hapiDao = $mock ? new HypToolsMockHapiDao($player->name) : new HypToolsRealHapiDao(Session::getHapi());
 
 $method = @$_REQUEST['method'];
 if ($method == 'report'){
 	header('Content-Type: application/json');
 	
 	//query Hyperiums
-	$hapiFleetsInfo = $hapi->getFleetsInfo();
+	$hapiFleetsInfo = $hapiDao->getFleetsInfo();
 	
 	//save to the session so the exact same data can be used when the user submits the report
 	Session::setHapiFleetsInfo($hapiFleetsInfo);

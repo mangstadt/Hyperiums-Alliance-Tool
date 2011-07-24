@@ -76,8 +76,8 @@ class HypToolsMockDao implements HypToolsDao{
 			
 			$game = new Game();
 			$game->id = $this->gamesNextId++;
-			$game->name = "Hyperiums6";
-			$game->description = "Main game";
+			$game->name = "MockGame";
+			$game->description = "The game for mock mode.";
 			$this->games[] = $game;
 			
 			//player object for the current user
@@ -264,6 +264,60 @@ class HypToolsMockDao implements HypToolsDao{
 			$j->eventDate = $jr->requestDate;
 			$j->event = JoinLog::EVENT_REQUESTED;
 			$this->joinLogs[] = $j;
+			
+			//player submitted a fleet report
+			$f = new Fleet();
+			$f->id = $this->fleetsNextId++;
+			$f->submitDate = new DateTime("2011-07-01 15:22:13");
+			$f->player = $me;
+			$f->azterkScouts = rand(500, 50000);
+			$f->azterkBombers = rand(500, 5000);
+			$f->azterkDestroyers = rand(500, 5000);
+			$f->azterkCruisers = rand(100, 1000);
+			$f->azterkArmies = rand(50, 500);
+			$f->humanScouts = rand(500, 50000);
+			$f->humanBombers = rand(500, 5000);
+			$f->humanDestroyers = rand(500, 5000);
+			$f->humanCruisers = rand(100, 1000);
+			$f->humanArmies = rand(50, 500);
+			$f->xillorScouts = rand(500, 50000);
+			$f->xillorBombers = rand(500, 5000);
+			$f->xillorDestroyers = rand(500, 5000);
+			$f->xillorCruisers = rand(100, 1000);
+			$f->xillorArmies = rand(50, 500);
+			$this->fleets[] = $f;
+			$s = new SubmitLog();
+			$s->id = $this->submitLogsNextId++;
+			$s->player = $me;
+			$s->submitDate = $f->submitDate;
+			$this->submitLogs[] = $s;
+			
+			//Cool_Dude67 submitted a fleet report
+			$f = new Fleet();
+			$f->id = $this->fleetsNextId++;
+			$f->submitDate = new DateTime("2011-07-02 11:20:44");
+			$f->player = $coolDude67;
+			$f->azterkScouts = rand(500, 50000);
+			$f->azterkBombers = rand(500, 5000);
+			$f->azterkDestroyers = rand(500, 5000);
+			$f->azterkCruisers = rand(100, 1000);
+			$f->azterkArmies = rand(50, 500);
+			$f->humanScouts = rand(500, 50000);
+			$f->humanBombers = rand(500, 5000);
+			$f->humanDestroyers = rand(500, 5000);
+			$f->humanCruisers = rand(100, 1000);
+			$f->humanArmies = rand(50, 500);
+			$f->xillorScouts = rand(500, 50000);
+			$f->xillorBombers = rand(500, 5000);
+			$f->xillorDestroyers = rand(500, 5000);
+			$f->xillorCruisers = rand(100, 1000);
+			$f->xillorArmies = rand(50, 500);
+			$this->fleets[] = $f;
+			$s = new SubmitLog();
+			$s->id = $this->submitLogsNextId++;
+			$s->player = $coolDude67;
+			$s->submitDate = $f->submitDate;
+			$this->submitLogs[] = $s;
 		}
 	}
 	
@@ -644,6 +698,7 @@ class HypToolsMockDao implements HypToolsDao{
 	//override
 	public function insertFleet(Fleet $fleet){
 		$fleet->id = $this->fleetsNextId++;
+		$fleet->submitDate = new DateTime("now");
 		$this->fleets[] = $fleet;
 	}
 	
