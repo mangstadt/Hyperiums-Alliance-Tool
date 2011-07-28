@@ -31,6 +31,18 @@ if ($method == 'report'){
 	//query Hyperiums
 	$hapiFleetsInfo = $hapiDao->getFleetsInfo();
 	
+	//remove fleets that do not belong to the player
+	foreach ($hapiFleetsInfo as $i=>$hapiFleetInfo){
+		$hapiFleets = $hapiFleetInfo->getFleets();
+		foreach ($hapiFleets as $j=>$hapiFleet){
+			if (strcasecmp($hapiFleet->getOwner(), $player->name) != 0){
+				unset($hapiFleets[$j]);
+			}
+		}
+		$hapiFleets = array_values($hapiFleets); //re-index array
+		$hapiFleetInfo->setFleets($hapiFleets);
+	}
+	
 	//save to the session so the exact same data can be used when the user submits the report
 	Session::setHapiFleetsInfo($hapiFleetsInfo);
 	

@@ -53,7 +53,7 @@ class HypToolsMockHapiDao implements HypToolsHapiDao{
 		for ($i = 0; $i < 3; $i++){
 			$f = new Fleet();
 			$f->setId($nextId++);
-			$f->setOwner($playerName);
+			$f->setOwner($this->playerName);
 			$f->setRace(rand(0, 2));
 			$f->setScouts(rand(500, 50000));
 			$f->setBombers(rand(500, 5000));
@@ -69,6 +69,26 @@ class HypToolsMockHapiDao implements HypToolsHapiDao{
 			$f->setSellPrice(0);
 			$fs[] = $f;
 		}
+		
+		//add fleet that does not belong to the player
+		$f = new Fleet();
+		$f->setId($nextId++);
+		$f->setOwner("DaGod");
+		$f->setRace(rand(0, 2));
+		$f->setScouts(5000000);
+		$f->setBombers(5000000);
+		$f->setDestroyers(5000000);
+		$f->setCruisers(5000000);
+		$f->setCarriedArmies(5000000);
+		$f->setGroundArmies(5000000);
+		$f->setDefending(rand(0, 1));
+		$f->setAutoDropping(false);
+		$f->setBombing(false);
+		$f->setCamouflaged(false);
+		$f->setDelay(0);
+		$f->setSellPrice(0);
+		$fs[] = $f;
+		
 		$fi->setFleets($fs);
 		
 		$fis[] = $fi;
