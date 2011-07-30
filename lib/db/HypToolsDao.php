@@ -183,23 +183,23 @@ interface HypToolsDao{
 	public function selectJoinLogsByPlayer(Player $player);
 	
 	/**
-	 * Deletes all fleet reports belonging to a player.
+	 * Deletes all reports belonging to a player.
 	 * @param Player $player the player
 	 */
-	public function deleteFleetsByPlayer(Player $player);
+	public function deleteReportsByPlayer(Player $player);
 	
 	/**
-	 * Inserts a new fleet report.
-	 * @param Fleet $fleet the fleet report
+	 * Inserts a new report.
+	 * @param Report $report the report
 	 */
-	public function insertFleet(Fleet $fleet);
+	public function insertReport(Report $report);
 	
 	/**
-	 * Gets the fleet reports of all players that belong to the given alliance, ordered by player name.
+	 * Gets the reports of all players that belong to the given alliance, ordered by player name.
 	 * @param Alliance $alliance the alliance
-	 * @return array(Fleet) the fleet reports
+	 * @return array(Report) the reports
 	 */
-	public function selectFleetsByAlliance(Alliance $alliance);
+	public function selectReportsByAlliance(Alliance $alliance);
 	
 	/**
 	 * Inserts a new submit log.

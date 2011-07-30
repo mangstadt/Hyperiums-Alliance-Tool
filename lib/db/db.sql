@@ -111,13 +111,14 @@ CREATE TABLE IF NOT EXISTS permissions(
 	perms INT NOT NULL DEFAULT 0
 );
 
---The fleet reports of the players.
-CREATE TABLE IF NOT EXISTS fleets(
-	fleetId INT PRIMARY KEY AUTO_INCREMENT,
+--The player reports.
+CREATE TABLE IF NOT EXISTS reports(
+	reportId INT PRIMARY KEY AUTO_INCREMENT,
 	
-	--the player
+	--the player that this report is from
 	playerId INT NOT NULL REFERENCES players(playerId),
 	
+	--the date the report was submitted
 	submitDate DATETIME NOT NULL,
 	
 	azterkScouts INT NOT NULL,

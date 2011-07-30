@@ -2,18 +2,20 @@
 namespace db;
 
 /**
- * A row from the "fleets" table.
+ * A row from the "reports" table.
  * @author mangstadt
  */
-class Fleet{
+class Report{
 	public $id;
 	
 	/**
+	 * The player that this report is from.
 	 * @var Player
 	 */
 	public $player;
 	
 	/**
+	 * The date this report was submitted.
 	 * @var DateTime
 	 */
 	public $submitDate;

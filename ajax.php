@@ -4,10 +4,9 @@
  */
 
 require_once 'lib/bootstrap.php';
-use ajax\Report;
 use db\HypToolsMockDao;
 use db\HypToolsMySqlDao;
-use db\Fleet;
+use db\Report;
 use HAPI\HAPI;
 use hapidao\HypToolsRealHapiDao;
 use hapidao\HypToolsMockHapiDao;
@@ -47,7 +46,7 @@ if ($method == 'report'){
 	Session::setHapiFleetsInfo($hapiFleetsInfo);
 	
 	//generate ajax response
-	$report = new Report();
+	$report = new ajax\Report();
 	foreach ($hapiFleetsInfo as $hapiFleetInfo){
 		$hapiFleets = $hapiFleetInfo->getFleets();
 		foreach ($hapiFleets as $hapiFleet){
@@ -106,34 +105,34 @@ if ($method == 'report'){
 		exit();
 	}
 	
-	//build Fleet object
-	$fleet = new Fleet();
+	//build Report object
+	$report = new Report();
 	foreach ($hapiFleetsInfo as $hapiFleetInfo){
 		$hapiFleets = $hapiFleetInfo->getFleets();
 		foreach ($hapiFleets as $hapiFleet){
-			$fleet->player = $player;
+			$report->player = $player;
 			$race = $hapiFleet->getRace();
 			if ($race == HAPI::RACE_AZTERK){
-				$fleet->azterkScouts += $hapiFleet->getScouts();
-				$fleet->azterkBombers += $hapiFleet->getBombers();
-				$fleet->azterkDestroyers += $hapiFleet->getDestroyers();
-				$fleet->azterkCruisers += $hapiFleet->getCruisers();
-				$fleet->azterkArmies += $hapiFleet->getGroundArmies();
-				$fleet->azterkArmies += $hapiFleet->getCarriedArmies();
+				$report->azterkScouts += $hapiFleet->getScouts();
+				$report->azterkBombers += $hapiFleet->getBombers();
+				$report->azterkDestroyers += $hapiFleet->getDestroyers();
+				$report->azterkCruisers += $hapiFleet->getCruisers();
+				$report->azterkArmies += $hapiFleet->getGroundArmies();
+				$report->azterkArmies += $hapiFleet->getCarriedArmies();
 			} else if ($race == HAPI::RACE_HUMAN){
-				$fleet->humanScouts += $hapiFleet->getScouts();
-				$fleet->humanBombers += $hapiFleet->getBombers();
-				$fleet->humanDestroyers += $hapiFleet->getDestroyers();
-				$fleet->humanCruisers += $hapiFleet->getCruisers();
-				$fleet->humanArmies += $hapiFleet->getGroundArmies();
-				$fleet->humanArmies += $hapiFleet->getCarriedArmies();
+				$report->humanScouts += $hapiFleet->getScouts();
+				$report->humanBombers += $hapiFleet->getBombers();
+				$report->humanDestroyers += $hapiFleet->getDestroyers();
+				$report->humanCruisers += $hapiFleet->getCruisers();
+				$report->humanArmies += $hapiFleet->getGroundArmies();
+				$report->humanArmies += $hapiFleet->getCarriedArmies();
 			} else if ($race == HAPI::RACE_XILLOR){
-				$fleet->xillorScouts += $hapiFleet->getScouts();
-				$fleet->xillorBombers += $hapiFleet->getBombers();
-				$fleet->xillorDestroyers += $hapiFleet->getDestroyers();
-				$fleet->xillorCruisers += $hapiFleet->getCruisers();
-				$fleet->xillorArmies += $hapiFleet->getGroundArmies();
-				$fleet->xillorArmies += $hapiFleet->getCarriedArmies();
+				$report->xillorScouts += $hapiFleet->getScouts();
+				$report->xillorBombers += $hapiFleet->getBombers();
+				$report->xillorDestroyers += $hapiFleet->getDestroyers();
+				$report->xillorCruisers += $hapiFleet->getCruisers();
+				$report->xillorArmies += $hapiFleet->getGroundArmies();
+				$report->xillorArmies += $hapiFleet->getCarriedArmies();
 			}
 		}
 	}
@@ -141,8 +140,8 @@ if ($method == 'report'){
 	//save to database
 	$dao->beginTransaction();
 	try{
-		$dao->deleteFleetsByPlayer($player);
-		$dao->insertFleet($fleet);
+		$dao->deleteReportsByPlayer($player);
+		$dao->insertReport($report);
 		$dao->insertSubmitLog($player);
 		$dao->commit();
 	} catch (Exception $e){

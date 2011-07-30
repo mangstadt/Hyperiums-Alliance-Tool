@@ -1,6 +1,6 @@
 <?php
 require_once 'lib/bootstrap.php';
-use db\Fleet;
+use db\Report;
 use db\HypToolsMySqlDao;
 use db\HypToolsMockDao;
 use db\JoinLog;
@@ -46,29 +46,29 @@ if ($playerPermissions == null){
 //get the alliances the player belongs to
 $playerAlliances = $dao->selectPermissionsByPlayer($player);
 
-//get the fleet reports of all alliance members
-$fleets = $dao->selectFleetsByAlliance($alliance);
+//get the reports of all alliance members
+$reports = $dao->selectReportsByAlliance($alliance);
 
-//sum up all fleets
-$fleetTotals = new Fleet();
-foreach ($fleets as $fleet){
-	$fleetTotals->azterkScouts += $fleet->azterkScouts;
-	$fleetTotals->azterkDestroyers += $fleet->azterkDestroyers;
-	$fleetTotals->azterkBombers += $fleet->azterkBombers;
-	$fleetTotals->azterkCruisers += $fleet->azterkCruisers;
-	$fleetTotals->azterkArmies += $fleet->azterkArmies;
+//sum up all reports
+$reportTotals = new Report();
+foreach ($reports as $report){
+	$reportTotals->azterkScouts += $report->azterkScouts;
+	$reportTotals->azterkDestroyers += $report->azterkDestroyers;
+	$reportTotals->azterkBombers += $report->azterkBombers;
+	$reportTotals->azterkCruisers += $report->azterkCruisers;
+	$reportTotals->azterkArmies += $report->azterkArmies;
 	
-	$fleetTotals->humanScouts += $fleet->humanScouts;
-	$fleetTotals->humanDestroyers += $fleet->humanDestroyers;
-	$fleetTotals->humanBombers += $fleet->humanBombers;
-	$fleetTotals->humanCruisers += $fleet->humanCruisers;
-	$fleetTotals->humanArmies += $fleet->humanArmies;
+	$reportTotals->humanScouts += $report->humanScouts;
+	$reportTotals->humanDestroyers += $report->humanDestroyers;
+	$reportTotals->humanBombers += $report->humanBombers;
+	$reportTotals->humanCruisers += $report->humanCruisers;
+	$reportTotals->humanArmies += $report->humanArmies;
 	
-	$fleetTotals->xillorScouts += $fleet->xillorScouts;
-	$fleetTotals->xillorDestroyers += $fleet->xillorDestroyers;
-	$fleetTotals->xillorBombers += $fleet->xillorBombers;
-	$fleetTotals->xillorCruisers += $fleet->xillorCruisers;
-	$fleetTotals->xillorArmies += $fleet->xillorArmies;
+	$reportTotals->xillorScouts += $report->xillorScouts;
+	$reportTotals->xillorDestroyers += $report->xillorDestroyers;
+	$reportTotals->xillorBombers += $report->xillorBombers;
+	$reportTotals->xillorCruisers += $report->xillorCruisers;
+	$reportTotals->xillorArmies += $report->xillorArmies;
 }
 
 ?>
@@ -143,7 +143,7 @@ foreach ($fleets as $fleet){
 				<div class="block">
 					<h1>Fleet Status Report</h1>
 					<?php 
-					if (count($fleets) == 0):
+					if (count($reports) == 0):
 						?><i>No reports submitted.</i><?php
 					else:
 						?>
@@ -151,8 +151,8 @@ foreach ($fleets as $fleet){
 						<div align="center" style="border-bottom:5px solid #fff; padding-bottom:15px;">
 							<table cellspacing="10">
 								<tr>
-									<td><?php echo fleetTable($fleetTotals)?></td>
-									<td><?php echo avgPTable($fleetTotals)?></td>
+									<td><?php echo fleetTable($reportTotals)?></td>
+									<td><?php echo avgPTable($reportTotals)?></td>
 								</tr>
 							</table>
 						</div>
@@ -160,8 +160,8 @@ foreach ($fleets as $fleet){
 						<h2>Fleets by Player</h2>
 						<table width="100%" cellpadding="10">
 							<?php
-							for ($i = 0; $i < count($fleets); $i++):
-								$fleet = $fleets[$i];
+							for ($i = 0; $i < count($reports); $i++):
+								$report = $reports[$i];
 								
 								if ($i % 2 == 0):
 									?><tr><?php
@@ -169,10 +169,10 @@ foreach ($fleets as $fleet){
 								
 								?>
 								<td>
-									<b><?php echo htmlspecialchars($fleet->player->name)?></b><br />
-									Last Submission: <?php echo htmlspecialchars($fleet->submitDate->format("Y-m-d G:i T"))?>
-									<?php echo fleetTable($fleet)?>
-									<?php echo avgPTable($fleet)?>
+									<b><?php echo htmlspecialchars($report->player->name)?></b><br />
+									Last Submission: <?php echo htmlspecialchars($report->submitDate->format("Y-m-d G:i T"))?>
+									<?php echo fleetTable($report)?>
+									<?php echo avgPTable($report)?>
 								</td>
 								
 								<?php
@@ -231,30 +231,30 @@ function avgPBars($avgP){
 
 /**
  * Builds the table used to display AvgP.
- * @param Fleet $fleet the fleet
+ * @param Report $report the report
  * @return string the HTML table
  */
-function avgPTable(Fleet $fleet){
+function avgPTable(Report $report){
 	$spaceAvgP = 0;
 	$groundAvgP = 0;
 	
-	$spaceAvgP += $fleet->azterkScouts * AvgP::AZTERK_SCOUT;
-	$spaceAvgP += $fleet->azterkDestroyers * AvgP::AZTERK_DESTROYER;
-	$spaceAvgP += $fleet->azterkBombers * AvgP::AZTERK_BOMBER;
-	$spaceAvgP += $fleet->azterkCruisers * AvgP::AZTERK_CRUISER;
-	$groundAvgP += $fleet->azterkArmies * AvgP::AZTERK_ARMY;
+	$spaceAvgP += $report->azterkScouts * AvgP::AZTERK_SCOUT;
+	$spaceAvgP += $report->azterkDestroyers * AvgP::AZTERK_DESTROYER;
+	$spaceAvgP += $report->azterkBombers * AvgP::AZTERK_BOMBER;
+	$spaceAvgP += $report->azterkCruisers * AvgP::AZTERK_CRUISER;
+	$groundAvgP += $report->azterkArmies * AvgP::AZTERK_ARMY;
 
-	$spaceAvgP += $fleet->humanScouts * AvgP::HUMAN_SCOUT;
-	$spaceAvgP += $fleet->humanDestroyers* AvgP::HUMAN_DESTROYER;
-	$spaceAvgP += $fleet->humanBombers * AvgP::HUMAN_BOMBER;
-	$spaceAvgP += $fleet->humanCruisers * AvgP::HUMAN_CRUISER;
-	$groundAvgP += $fleet->humanArmies * AvgP::HUMAN_ARMY;
+	$spaceAvgP += $report->humanScouts * AvgP::HUMAN_SCOUT;
+	$spaceAvgP += $report->humanDestroyers* AvgP::HUMAN_DESTROYER;
+	$spaceAvgP += $report->humanBombers * AvgP::HUMAN_BOMBER;
+	$spaceAvgP += $report->humanCruisers * AvgP::HUMAN_CRUISER;
+	$groundAvgP += $report->humanArmies * AvgP::HUMAN_ARMY;
 
-	$spaceAvgP += $fleet->xillorScouts * AvgP::XILLOR_SCOUT;
-	$spaceAvgP += $fleet->xillorDestroyers * AvgP::XILLOR_DESTROYER;
-	$spaceAvgP += $fleet->xillorBombers * AvgP::XILLOR_BOMBER;
-	$spaceAvgP += $fleet->xillorCruisers * AvgP::XILLOR_CRUISER;
-	$groundAvgP += $fleet->xillorArmies * AvgP::XILLOR_ARMY;
+	$spaceAvgP += $report->xillorScouts * AvgP::XILLOR_SCOUT;
+	$spaceAvgP += $report->xillorDestroyers * AvgP::XILLOR_DESTROYER;
+	$spaceAvgP += $report->xillorBombers * AvgP::XILLOR_BOMBER;
+	$spaceAvgP += $report->xillorCruisers * AvgP::XILLOR_CRUISER;
+	$groundAvgP += $report->xillorArmies * AvgP::XILLOR_ARMY;
 	
 	$spaceAvgPText = $spaceAvgP;
 	if ($spaceAvgP > 1000000) {
@@ -290,10 +290,10 @@ function avgPTable(Fleet $fleet){
 
 /**
  * Builds the table that shows unit by unit breakdown of a fleet.
- * @param $fleet the fleet
+ * @param Report $report the report
  * @return string the HTML table
  */
-function fleetTable(Fleet $fleet){
+function fleetTable(Report $report){
 	ob_start();
 	?>
 	<table cellspacing="1" cellpadding="0" border="0">
@@ -313,37 +313,37 @@ function fleetTable(Fleet $fleet){
 			</tr>
 			<tr>
 				<td><img src="img/cruiser.gif"> Cruisers</td>
-				<td class="hc" id="humanCruisers"><?php echo fleetTableFormat($fleet->humanCruisers)?></td>
-				<td class="hc" id="azterkCruisers"><?php echo fleetTableFormat($fleet->azterkCruisers)?></td>
-				<td class="hc" id="xillorCruisers"><?php echo fleetTableFormat($fleet->xillorCruisers)?></td>
+				<td class="hc" id="humanCruisers"><?php echo fleetTableFormat($report->humanCruisers)?></td>
+				<td class="hc" id="azterkCruisers"><?php echo fleetTableFormat($report->azterkCruisers)?></td>
+				<td class="hc" id="xillorCruisers"><?php echo fleetTableFormat($report->xillorCruisers)?></td>
 				<td></td>
 			</tr>
 			<tr>
 				<td bgcolor="#222233"><img src="img/destroyer.gif"> Destroyers</td>
-				<td bgcolor="#222233" class="hc" id="humanDestroyers"><?php echo fleetTableFormat($fleet->humanDestroyers)?></td>
-				<td bgcolor="#222233" class="hc" id="azterkDestroyers"><?php echo fleetTableFormat($fleet->azterkDestroyers)?></td>
-				<td bgcolor="#222233" class="hc" id="xillorDestroyers"><?php echo fleetTableFormat($fleet->xillorDestroyers)?></td>
+				<td bgcolor="#222233" class="hc" id="humanDestroyers"><?php echo fleetTableFormat($report->humanDestroyers)?></td>
+				<td bgcolor="#222233" class="hc" id="azterkDestroyers"><?php echo fleetTableFormat($report->azterkDestroyers)?></td>
+				<td bgcolor="#222233" class="hc" id="xillorDestroyers"><?php echo fleetTableFormat($report->xillorDestroyers)?></td>
 				<td></td>
 			</tr>
 			<tr>
 				<td><img src="img/scout.gif"> Scouts</td>
-				<td class="hc" id="humanScouts"><?php echo fleetTableFormat($fleet->humanScouts)?></td>
-				<td class="hc" id="azterkScouts"><?php echo fleetTableFormat($fleet->azterkScouts)?></td>
-				<td class="hc" id="xillorScouts"><?php echo fleetTableFormat($fleet->xillorScouts)?></td>
+				<td class="hc" id="humanScouts"><?php echo fleetTableFormat($report->humanScouts)?></td>
+				<td class="hc" id="azterkScouts"><?php echo fleetTableFormat($report->azterkScouts)?></td>
+				<td class="hc" id="xillorScouts"><?php echo fleetTableFormat($report->xillorScouts)?></td>
 				<td></td>
 			</tr>
 			<tr>
 				<td bgcolor="#222233"><img src="img/bomber.gif"> Bombers</td>
-				<td bgcolor="#222233" class="hc" id="humanBombers"><?php echo fleetTableFormat($fleet->humanBombers)?></td>
-				<td bgcolor="#222233" class="hc" id="azterkBombers"><?php echo fleetTableFormat($fleet->azterkBombers)?></td>
-				<td bgcolor="#222233" class="hc" id="xillorBombers"><?php echo fleetTableFormat($fleet->xillorBombers)?></td>
+				<td bgcolor="#222233" class="hc" id="humanBombers"><?php echo fleetTableFormat($report->humanBombers)?></td>
+				<td bgcolor="#222233" class="hc" id="azterkBombers"><?php echo fleetTableFormat($report->azterkBombers)?></td>
+				<td bgcolor="#222233" class="hc" id="xillorBombers"><?php echo fleetTableFormat($report->xillorBombers)?></td>
 				<td></td>
 			</tr>
 			<tr>
 				<td><img src="img/army.gif"> Armies</td>
-				<td class="hc" id="humanArmies"><?php echo fleetTableFormat($fleet->humanArmies)?></td>
-				<td class="hc" id="azterkArmies"><?php echo fleetTableFormat($fleet->azterkArmies)?></td>
-				<td class="hc" id="xillorArmies"><?php echo fleetTableFormat($fleet->xillorArmies)?></td>
+				<td class="hc" id="humanArmies"><?php echo fleetTableFormat($report->humanArmies)?></td>
+				<td class="hc" id="azterkArmies"><?php echo fleetTableFormat($report->azterkArmies)?></td>
+				<td class="hc" id="xillorArmies"><?php echo fleetTableFormat($report->xillorArmies)?></td>
 				<td></td>
 			</tr>
 		</tbody>

@@ -627,7 +627,7 @@ class HypToolsMySqlDao implements HypToolsDao{
 	public function dropAllTables(){
 		$this->beginTransaction();
 		try{
-			$tables = array("submitLogs", "fleets", "permissions", "joinRequests", "joinLogs", "alliances", "players", "games");
+			$tables = array("submitLogs", "reports", "permissions", "joinRequests", "joinLogs", "alliances", "players", "games");
 			foreach ($tables as $t){
 				$this->db->exec("DROP TABLE IF EXISTS $t");
 			}
@@ -749,50 +749,50 @@ class HypToolsMySqlDao implements HypToolsDao{
 	}
 	
 	//override
-	public function deleteFleetsByPlayer(Player $player){
-		$sql = "DELETE FROM fleets WHERE playerId = :playerId";
+	public function deleteReportsByPlayer(Player $player){
+		$sql = "DELETE FROM reports WHERE playerId = :playerId";
 		$stmt = $this->db->prepare($sql);
 		$stmt->bindValue(":playerId", $player->id, PDO::PARAM_INT);
 		$stmt->execute();
 	}
 	
 	//override
-	public function insertFleet(Fleet $fleet){
-		$sql = "INSERT INTO fleets
+	public function insertReport(Report $report){
+		$sql = "INSERT INTO reports
 		( playerId, submitDate,  azterkScouts,  azterkBombers,  azterkDestroyers,  azterkCruisers,  azterkArmies,  humanScouts,  humanBombers,  humanDestroyers,  humanCruisers,  humanArmies, 	xillorScouts,  xillorBombers,  xillorDestroyers,  xillorCruisers, 	xillorArmies) VALUES
 		(:playerId, Now(),       :azterkScouts, :azterkBombers, :azterkDestroyers, :azterkCruisers, :azterkArmies, :humanScouts, :humanBombers, :humanDestroyers, :humanCruisers, :humanArmies,	:xillorScouts, :xillorBombers, :xillorDestroyers, :xillorCruisers,	:xillorArmies)
 		";
 		$stmt = $this->db->prepare($sql);
-		$stmt->bindValue(":playerId", $fleet->player->id, PDO::PARAM_INT);
-		$stmt->bindValue(":azterkScouts", $fleet->azterkScouts, PDO::PARAM_INT);
-		$stmt->bindValue(":azterkBombers", $fleet->azterkBombers, PDO::PARAM_INT);
-		$stmt->bindValue(":azterkDestroyers", $fleet->azterkDestroyers, PDO::PARAM_INT);
-		$stmt->bindValue(":azterkCruisers", $fleet->azterkCruisers, PDO::PARAM_INT);
-		$stmt->bindValue(":azterkArmies", $fleet->azterkArmies, PDO::PARAM_INT);
-		$stmt->bindValue(":humanScouts", $fleet->humanScouts, PDO::PARAM_INT);
-		$stmt->bindValue(":humanBombers", $fleet->humanBombers, PDO::PARAM_INT);
-		$stmt->bindValue(":humanDestroyers", $fleet->humanDestroyers, PDO::PARAM_INT);
-		$stmt->bindValue(":humanCruisers", $fleet->humanCruisers, PDO::PARAM_INT);
-		$stmt->bindValue(":humanArmies", $fleet->humanArmies, PDO::PARAM_INT);
-		$stmt->bindValue(":xillorScouts", $fleet->xillorScouts, PDO::PARAM_INT);
-		$stmt->bindValue(":xillorBombers", $fleet->xillorBombers, PDO::PARAM_INT);
-		$stmt->bindValue(":xillorDestroyers", $fleet->xillorDestroyers, PDO::PARAM_INT);
-		$stmt->bindValue(":xillorCruisers", $fleet->xillorCruisers, PDO::PARAM_INT);
-		$stmt->bindValue(":xillorArmies", $fleet->xillorArmies, PDO::PARAM_INT);
+		$stmt->bindValue(":playerId", $report->player->id, PDO::PARAM_INT);
+		$stmt->bindValue(":azterkScouts", $report->azterkScouts, PDO::PARAM_INT);
+		$stmt->bindValue(":azterkBombers", $report->azterkBombers, PDO::PARAM_INT);
+		$stmt->bindValue(":azterkDestroyers", $report->azterkDestroyers, PDO::PARAM_INT);
+		$stmt->bindValue(":azterkCruisers", $report->azterkCruisers, PDO::PARAM_INT);
+		$stmt->bindValue(":azterkArmies", $report->azterkArmies, PDO::PARAM_INT);
+		$stmt->bindValue(":humanScouts", $report->humanScouts, PDO::PARAM_INT);
+		$stmt->bindValue(":humanBombers", $report->humanBombers, PDO::PARAM_INT);
+		$stmt->bindValue(":humanDestroyers", $report->humanDestroyers, PDO::PARAM_INT);
+		$stmt->bindValue(":humanCruisers", $report->humanCruisers, PDO::PARAM_INT);
+		$stmt->bindValue(":humanArmies", $report->humanArmies, PDO::PARAM_INT);
+		$stmt->bindValue(":xillorScouts", $report->xillorScouts, PDO::PARAM_INT);
+		$stmt->bindValue(":xillorBombers", $report->xillorBombers, PDO::PARAM_INT);
+		$stmt->bindValue(":xillorDestroyers", $report->xillorDestroyers, PDO::PARAM_INT);
+		$stmt->bindValue(":xillorCruisers", $report->xillorCruisers, PDO::PARAM_INT);
+		$stmt->bindValue(":xillorArmies", $report->xillorArmies, PDO::PARAM_INT);
 		$stmt->execute();
 		
-		$fleet->id = $this->db->lastInsertId();
-		$fleet->submitDate = new DateTime("now");
+		$report->id = $this->db->lastInsertId();
+		$report->submitDate = new DateTime("now");
 	}
 	
 	//override
-	public function selectFleetsByAlliance(Alliance $alliance){
-		$fleets = array();
+	public function selectReportsByAlliance(Alliance $alliance){
+		$reports = array();
 		
 		$sql = "
-		SELECT f.*, pl.*, pl.name AS playerName, g.* FROM fleets f
-		INNER JOIN permissions p ON f.playerId = p.playerId
-		INNER JOIN players pl ON f.playerId = pl.playerId
+		SELECT r.*, pl.*, pl.name AS playerName, g.* FROM reports r
+		INNER JOIN permissions p ON r.playerId = p.playerId
+		INNER JOIN players pl ON r.playerId = pl.playerId
 		INNER JOIN games g ON g.gameId = pl.gameId
 		WHERE p.allianceId = :allianceId
 		ORDER BY pl.name
@@ -801,31 +801,31 @@ class HypToolsMySqlDao implements HypToolsDao{
 		$stmt->bindValue(":allianceId", $alliance->id, PDO::PARAM_INT);
 		$stmt->execute();
 		while ($row = $stmt->fetch()){
-			$fleet = new Fleet();
-			$fleet->id = $row['fleetId'];
-			$fleet->submitDate = $this->date($row['submitDate']);
-			$fleet->azterkScouts = $row['azterkScouts'];
-			$fleet->azterkBombers = $row['azterkBombers'];
-			$fleet->azterkDestroyers = $row['azterkDestroyers'];
-			$fleet->azterkCruisers = $row['azterkCruisers'];
-			$fleet->azterkArmies = $row['azterkArmies'];
-			$fleet->humanScouts = $row['humanScouts'];
-			$fleet->humanBombers = $row['humanBombers'];
-			$fleet->humanDestroyers = $row['humanDestroyers'];
-			$fleet->humanCruisers = $row['humanCruisers'];
-			$fleet->humanArmies = $row['humanArmies'];
-			$fleet->xillorScouts = $row['xillorScouts'];
-			$fleet->xillorBombers = $row['xillorBombers'];
-			$fleet->xillorDestroyers = $row['xillorDestroyers'];
-			$fleet->xillorCruisers = $row['xillorCruisers'];
-			$fleet->xillorArmies = $row['xillorArmies'];
+			$report = new Report();
+			$report->id = $row['reportId'];
+			$report->submitDate = $this->date($row['submitDate']);
+			$report->azterkScouts = $row['azterkScouts'];
+			$report->azterkBombers = $row['azterkBombers'];
+			$report->azterkDestroyers = $row['azterkDestroyers'];
+			$report->azterkCruisers = $row['azterkCruisers'];
+			$report->azterkArmies = $row['azterkArmies'];
+			$report->humanScouts = $row['humanScouts'];
+			$report->humanBombers = $row['humanBombers'];
+			$report->humanDestroyers = $row['humanDestroyers'];
+			$report->humanCruisers = $row['humanCruisers'];
+			$report->humanArmies = $row['humanArmies'];
+			$report->xillorScouts = $row['xillorScouts'];
+			$report->xillorBombers = $row['xillorBombers'];
+			$report->xillorDestroyers = $row['xillorDestroyers'];
+			$report->xillorCruisers = $row['xillorCruisers'];
+			$report->xillorArmies = $row['xillorArmies'];
 			
 			$player = new Player();
 			$player->id = $row['playerId'];
 			$player->name = $row['playerName'];
 			$player->hypPlayerId = $row['hypPlayerId'];
 			$player->lastLoginDate = $this->date($row['lastLoginDate']);
-			$fleet->player = $player;
+			$report->player = $player;
 			
 			$game = new Game();
 			$game->id = $row['gameId'];
@@ -833,10 +833,10 @@ class HypToolsMySqlDao implements HypToolsDao{
 			$game->description = $row['description'];
 			$player->game = $game;
 			
-			$fleets[] = $fleet;
+			$reports[] = $report;
 		}
 		
-		return $fleets;
+		return $reports;
 	}
 	
 	//override

@@ -27,8 +27,8 @@ class HypToolsMockDao implements HypToolsDao{
 	private $joinLogs;
 	private $joinLogsNextId;
 	
-	private $fleets;
-	private $fleetsNextId;
+	private $reports;
+	private $reportsNextId;
 	
 	private $submitLogs;
 	private $submitLogsNextId;
@@ -65,8 +65,8 @@ class HypToolsMockDao implements HypToolsDao{
 			$this->joinRequestsNextId = $_SESSION['mock_joinRequestsNextId'];
 			$this->joinLogs = $_SESSION['mock_joinLogs'];
 			$this->joinLogsNextId = $_SESSION['mock_joinLogsNextId'];
-			$this->fleets = $_SESSION['mock_fleets'];
-			$this->fleetsNextId = $_SESSION['mock_fleetsNextId'];
+			$this->reports = $_SESSION['mock_reports'];
+			$this->reportsNextId = $_SESSION['mock_reportsNextId'];
 			$this->submitLogs = $_SESSION['mock_submitLogs'];
 			$this->submitLogsNextId = $_SESSION['mock_submitLogsNextId'];
 		} else {
@@ -265,58 +265,58 @@ class HypToolsMockDao implements HypToolsDao{
 			$j->event = JoinLog::EVENT_REQUESTED;
 			$this->joinLogs[] = $j;
 			
-			//player submitted a fleet report
-			$f = new Fleet();
-			$f->id = $this->fleetsNextId++;
-			$f->submitDate = new DateTime("2011-07-01 15:22:13");
-			$f->player = $me;
-			$f->azterkScouts = rand(500, 50000);
-			$f->azterkBombers = rand(500, 5000);
-			$f->azterkDestroyers = rand(500, 5000);
-			$f->azterkCruisers = rand(100, 1000);
-			$f->azterkArmies = rand(50, 500);
-			$f->humanScouts = rand(500, 50000);
-			$f->humanBombers = rand(500, 5000);
-			$f->humanDestroyers = rand(500, 5000);
-			$f->humanCruisers = rand(100, 1000);
-			$f->humanArmies = rand(50, 500);
-			$f->xillorScouts = rand(500, 50000);
-			$f->xillorBombers = rand(500, 5000);
-			$f->xillorDestroyers = rand(500, 5000);
-			$f->xillorCruisers = rand(100, 1000);
-			$f->xillorArmies = rand(50, 500);
-			$this->fleets[] = $f;
+			//player submitted a report
+			$r = new Report();
+			$r->id = $this->reportsNextId++;
+			$r->submitDate = new DateTime("2011-07-01 15:22:13");
+			$r->player = $me;
+			$r->azterkScouts = rand(500, 50000);
+			$r->azterkBombers = rand(500, 5000);
+			$r->azterkDestroyers = rand(500, 5000);
+			$r->azterkCruisers = rand(100, 1000);
+			$r->azterkArmies = rand(50, 500);
+			$r->humanScouts = rand(500, 50000);
+			$r->humanBombers = rand(500, 5000);
+			$r->humanDestroyers = rand(500, 5000);
+			$r->humanCruisers = rand(100, 1000);
+			$r->humanArmies = rand(50, 500);
+			$r->xillorScouts = rand(500, 50000);
+			$r->xillorBombers = rand(500, 5000);
+			$r->xillorDestroyers = rand(500, 5000);
+			$r->xillorCruisers = rand(100, 1000);
+			$r->xillorArmies = rand(50, 500);
+			$this->reports[] = $r;
 			$s = new SubmitLog();
 			$s->id = $this->submitLogsNextId++;
 			$s->player = $me;
-			$s->submitDate = $f->submitDate;
+			$s->submitDate = $r->submitDate;
 			$this->submitLogs[] = $s;
 			
-			//Cool_Dude67 submitted a fleet report
-			$f = new Fleet();
-			$f->id = $this->fleetsNextId++;
-			$f->submitDate = new DateTime("2011-07-02 11:20:44");
-			$f->player = $coolDude67;
-			$f->azterkScouts = rand(500, 50000);
-			$f->azterkBombers = rand(500, 5000);
-			$f->azterkDestroyers = rand(500, 5000);
-			$f->azterkCruisers = rand(100, 1000);
-			$f->azterkArmies = rand(50, 500);
-			$f->humanScouts = rand(500, 50000);
-			$f->humanBombers = rand(500, 5000);
-			$f->humanDestroyers = rand(500, 5000);
-			$f->humanCruisers = rand(100, 1000);
-			$f->humanArmies = rand(50, 500);
-			$f->xillorScouts = rand(500, 50000);
-			$f->xillorBombers = rand(500, 5000);
-			$f->xillorDestroyers = rand(500, 5000);
-			$f->xillorCruisers = rand(100, 1000);
-			$f->xillorArmies = rand(50, 500);
-			$this->fleets[] = $f;
+			//Cool_Dude67 submitted a report
+			$r = new Report();
+			$r->id = $this->reportsNextId++;
+			$r->submitDate = new DateTime("2011-07-02 11:20:44");
+			$r->player = $coolDude67;
+			$r->azterkScouts = rand(500, 50000);
+			$r->azterkBombers = rand(500, 5000);
+			$r->azterkDestroyers = rand(500, 5000);
+			$r->azterkCruisers = rand(100, 1000);
+			$r->azterkArmies = rand(50, 500);
+			$r->humanScouts = rand(500, 50000);
+			$r->humanBombers = rand(500, 5000);
+			$r->humanDestroyers = rand(500, 5000);
+			$r->humanCruisers = rand(100, 1000);
+			$r->humanArmies = rand(50, 500);
+			$r->xillorScouts = rand(500, 50000);
+			$r->xillorBombers = rand(500, 5000);
+			$r->xillorDestroyers = rand(500, 5000);
+			$r->xillorCruisers = rand(100, 1000);
+			$r->xillorArmies = rand(50, 500);
+			$this->reports[] = $r;
 			$s = new SubmitLog();
 			$s->id = $this->submitLogsNextId++;
 			$s->player = $coolDude67;
-			$s->submitDate = $f->submitDate;
+			$s->submitDate = $r->submitDate;
 			$this->submitLogs[] = $s;
 		}
 	}
@@ -335,8 +335,8 @@ class HypToolsMockDao implements HypToolsDao{
 		$_SESSION['mock_joinRequestsNextId'] = $this->joinRequestsNextId;
 		$_SESSION['mock_joinLogs'] = $this->joinLogs;
 		$_SESSION['mock_joinLogsNextId'] = $this->joinLogsNextId;
-		$_SESSION['mock_fleets'] = $this->fleets;
-		$_SESSION['mock_fleetsNextId'] = $this->fleetsNextId;
+		$_SESSION['mock_reports'] = $this->reports;
+		$_SESSION['mock_reportsNextId'] = $this->reportsNextId;
 		$_SESSION['mock_submitLogs'] = $this->submitLogs;
 		$_SESSION['mock_submitLogsNextId'] = $this->submitLogsNextId;
 	}
@@ -360,8 +360,8 @@ class HypToolsMockDao implements HypToolsDao{
 		$this->joinLogs = array();
 		$this->joinLogsNextId = 1;
 		
-		$this->fleets = array();
-		$this->fleetsNextId = 1;
+		$this->reports = array();
+		$this->reportsNextId = 1;
 		
 		$this->submitLogs = array();
 		$this->submitLogsNextId = 1;
@@ -687,36 +687,36 @@ class HypToolsMockDao implements HypToolsDao{
 	}
 	
 	//override
-	public function deleteFleetsByPlayer(Player $player){
-		foreach ($this->fleets as $i=>$fleet){
-			if ($fleet->player->id == $player->id){
-				unset($this->fleets[$i]);
+	public function deleteReportsByPlayer(Player $player){
+		foreach ($this->reports as $i=>$report){
+			if ($report->player->id == $player->id){
+				unset($this->reports[$i]);
 			}
 		}
 	}
 	
 	//override
-	public function insertFleet(Fleet $fleet){
-		$fleet->id = $this->fleetsNextId++;
-		$fleet->submitDate = new DateTime("now");
-		$this->fleets[] = $fleet;
+	public function insertReport(Report $report){
+		$report->id = $this->reportsNextId++;
+		$report->submitDate = new DateTime("now");
+		$this->reports[] = $report;
 	}
 	
 	//override
-	public function selectFleetsByAlliance(Alliance $alliance){
-		$fs = array();
-		foreach ($this->fleets as $f){
+	public function selectReportsByAlliance(Alliance $alliance){
+		$rs = array();
+		foreach ($this->reports as $r){
 			foreach ($this->permissions as $p){
-				if ($f->player->id == $p->player->id && $alliance->id == $p->alliance->id){
-					$fs[] = $f;
+				if ($r->player->id == $p->player->id && $alliance->id == $p->alliance->id){
+					$rs[] = $r;
 				}
 			}
 		}
-		usort($fs, function($a, $b){
+		usort($rs, function($a, $b){
 			//sort by player name
 			return strcmp($a->player->name, $b->player->name);
 		});
-		return $fs;
+		return $rs;
 	}
 	
 	//override
