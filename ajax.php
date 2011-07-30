@@ -6,7 +6,6 @@
 require_once 'lib/bootstrap.php';
 use db\HypToolsMockDao;
 use db\HypToolsMySqlDao;
-use db\Report;
 use HAPI\HAPI;
 use hapidao\HypToolsRealHapiDao;
 use hapidao\HypToolsMockHapiDao;
@@ -25,116 +24,95 @@ $hapiDao = $mock ? new HypToolsMockHapiDao($player->name) : new HypToolsRealHapi
 
 $method = @$_REQUEST['method'];
 if ($method == 'report'){
-	header('Content-Type: application/json');
-	
 	//query Hyperiums
 	$hapiFleetsInfo = $hapiDao->getFleetsInfo();
-	
-	//remove fleets that do not belong to the player
-	foreach ($hapiFleetsInfo as $i=>$hapiFleetInfo){
+
+	//build Report object
+	$report = new db\Report();
+	$report->player = $player;
+	foreach ($hapiFleetsInfo as $hapiFleetInfo){
 		$hapiFleets = $hapiFleetInfo->getFleets();
-		foreach ($hapiFleets as $j=>$hapiFleet){
-			if (strcasecmp($hapiFleet->getOwner(), $player->name) != 0){
-				unset($hapiFleets[$j]);
+		foreach ($hapiFleets as $hapiFleet){
+			if (strcasecmp($hapiFleet->getOwner(), $player->name) == 0){ //only consider fleets that belong to the player
+				$race = $hapiFleet->getRace();
+				if ($race == HAPI::RACE_AZTERK){
+					$report->azterkScouts += $hapiFleet->getScouts();
+					$report->azterkBombers += $hapiFleet->getBombers();
+					$report->azterkDestroyers += $hapiFleet->getDestroyers();
+					$report->azterkCruisers += $hapiFleet->getCruisers();
+					$report->azterkArmies += $hapiFleet->getGroundArmies();
+					$report->azterkArmies += $hapiFleet->getCarriedArmies();
+				} else if ($race == HAPI::RACE_HUMAN){
+					$report->humanScouts += $hapiFleet->getScouts();
+					$report->humanBombers += $hapiFleet->getBombers();
+					$report->humanDestroyers += $hapiFleet->getDestroyers();
+					$report->humanCruisers += $hapiFleet->getCruisers();
+					$report->humanArmies += $hapiFleet->getGroundArmies();
+					$report->humanArmies += $hapiFleet->getCarriedArmies();
+				} else if ($race == HAPI::RACE_XILLOR){
+					$report->xillorScouts += $hapiFleet->getScouts();
+					$report->xillorBombers += $hapiFleet->getBombers();
+					$report->xillorDestroyers += $hapiFleet->getDestroyers();
+					$report->xillorCruisers += $hapiFleet->getCruisers();
+					$report->xillorArmies += $hapiFleet->getGroundArmies();
+					$report->xillorArmies += $hapiFleet->getCarriedArmies();
+				}
 			}
 		}
-		$hapiFleets = array_values($hapiFleets); //re-index array
-		$hapiFleetInfo->setFleets($hapiFleets);
 	}
 	
 	//save to the session so the exact same data can be used when the user submits the report
-	Session::setHapiFleetsInfo($hapiFleetsInfo);
-	
+	Session::setReport($report);
+
 	//generate ajax response
-	$report = new ajax\Report();
-	foreach ($hapiFleetsInfo as $hapiFleetInfo){
-		$hapiFleets = $hapiFleetInfo->getFleets();
-		foreach ($hapiFleets as $hapiFleet){
-			$race = $hapiFleet->getRace();
-			if ($race == HAPI::RACE_AZTERK){
-				$report->azterkScouts += $hapiFleet->getScouts();
-				$report->azterkBombers += $hapiFleet->getBombers();
-				$report->azterkDestroyers += $hapiFleet->getDestroyers();
-				$report->azterkCruisers += $hapiFleet->getCruisers();
-				$report->azterkArmies += $hapiFleet->getGroundArmies();
-				$report->azterkArmies += $hapiFleet->getCarriedArmies();
-			} else if ($race == HAPI::RACE_HUMAN){
-				$report->humanScouts += $hapiFleet->getScouts();
-				$report->humanBombers += $hapiFleet->getBombers();
-				$report->humanDestroyers += $hapiFleet->getDestroyers();
-				$report->humanCruisers += $hapiFleet->getCruisers();
-				$report->humanArmies += $hapiFleet->getGroundArmies();
-				$report->humanArmies += $hapiFleet->getCarriedArmies();
-			} else if ($race == HAPI::RACE_XILLOR){
-				$report->xillorScouts += $hapiFleet->getScouts();
-				$report->xillorBombers += $hapiFleet->getBombers();
-				$report->xillorDestroyers += $hapiFleet->getDestroyers();
-				$report->xillorCruisers += $hapiFleet->getCruisers();
-				$report->xillorArmies += $hapiFleet->getGroundArmies();
-				$report->xillorArmies += $hapiFleet->getCarriedArmies();
-			}
-		}
-	}
+	$ajaxReport = new ajax\Report();
+	$ajaxReport->azterkScouts = $report->azterkScouts;
+	$ajaxReport->azterkBombers = $report->azterkBombers;
+	$ajaxReport->azterkDestroyers = $report->azterkDestroyers;
+	$ajaxReport->azterkCruisers = $report->azterkCruisers;
+	$ajaxReport->azterkArmies = $report->azterkArmies;
+	$ajaxReport->azterkArmies = $report->azterkArmies;
+	$ajaxReport->humanScouts = $report->humanScouts;
+	$ajaxReport->humanBombers = $report->humanBombers;
+	$ajaxReport->humanDestroyers = $report->humanDestroyers;
+	$ajaxReport->humanCruisers = $report->humanCruisers;
+	$ajaxReport->humanArmies = $report->humanArmies;
+	$ajaxReport->humanArmies = $report->humanArmies;
+	$ajaxReport->xillorScouts = $report->xillorScouts;
+	$ajaxReport->xillorBombers = $report->xillorBombers;
+	$ajaxReport->xillorDestroyers = $report->xillorDestroyers;
+	$ajaxReport->xillorCruisers = $report->xillorCruisers;
+	$ajaxReport->xillorArmies = $report->xillorArmies;
+	$ajaxReport->xillorArmies = $report->xillorArmies;
 	
-	$report->avgSpaceP += $report->azterkScouts * AvgP::AZTERK_SCOUT;
-	$report->avgSpaceP += $report->azterkBombers * AvgP::AZTERK_BOMBER;
-	$report->avgSpaceP += $report->azterkDestroyers * AvgP::AZTERK_DESTROYER;
-	$report->avgSpaceP += $report->azterkCruisers * AvgP::AZTERK_CRUISER;
-	$report->avgGroundP += $report->azterkArmies * AvgP::AZTERK_ARMY;
+	$ajaxReport->avgSpaceP += $report->azterkScouts * AvgP::AZTERK_SCOUT;
+	$ajaxReport->avgSpaceP += $report->azterkBombers * AvgP::AZTERK_BOMBER;
+	$ajaxReport->avgSpaceP += $report->azterkDestroyers * AvgP::AZTERK_DESTROYER;
+	$ajaxReport->avgSpaceP += $report->azterkCruisers * AvgP::AZTERK_CRUISER;
+	$ajaxReport->avgGroundP += $report->azterkArmies * AvgP::AZTERK_ARMY;
 	
-	$report->avgSpaceP += $report->humanScouts * AvgP::HUMAN_SCOUT;
-	$report->avgSpaceP += $report->humanBombers * AvgP::HUMAN_BOMBER;
-	$report->avgSpaceP += $report->humanDestroyers * AvgP::HUMAN_DESTROYER;
-	$report->avgSpaceP += $report->humanCruisers * AvgP::HUMAN_CRUISER;
-	$report->avgGroundP += $report->humanArmies * AvgP::HUMAN_ARMY;
+	$ajaxReport->avgSpaceP += $report->humanScouts * AvgP::HUMAN_SCOUT;
+	$ajaxReport->avgSpaceP += $report->humanBombers * AvgP::HUMAN_BOMBER;
+	$ajaxReport->avgSpaceP += $report->humanDestroyers * AvgP::HUMAN_DESTROYER;
+	$ajaxReport->avgSpaceP += $report->humanCruisers * AvgP::HUMAN_CRUISER;
+	$ajaxReport->avgGroundP += $report->humanArmies * AvgP::HUMAN_ARMY;
 	
-	$report->avgSpaceP += $report->xillorScouts * AvgP::XILLOR_SCOUT;
-	$report->avgSpaceP += $report->xillorBombers * AvgP::XILLOR_BOMBER;
-	$report->avgSpaceP += $report->xillorDestroyers * AvgP::XILLOR_DESTROYER;
-	$report->avgSpaceP += $report->xillorCruisers * AvgP::XILLOR_CRUISER;
-	$report->avgGroundP += $report->xillorArmies * AvgP::XILLOR_ARMY;
+	$ajaxReport->avgSpaceP += $report->xillorScouts * AvgP::XILLOR_SCOUT;
+	$ajaxReport->avgSpaceP += $report->xillorBombers * AvgP::XILLOR_BOMBER;
+	$ajaxReport->avgSpaceP += $report->xillorDestroyers * AvgP::XILLOR_DESTROYER;
+	$ajaxReport->avgSpaceP += $report->xillorCruisers * AvgP::XILLOR_CRUISER;
+	$ajaxReport->avgGroundP += $report->xillorArmies * AvgP::XILLOR_ARMY;
 	
 	//send response
-	echo json_encode($report);
+	header('Content-Type: application/json');
+	echo json_encode($ajaxReport);
 } else if ($method == 'submit'){
-	//get fleet info that was retrieved when the report was generated
-	$hapiFleetsInfo = Session::getHapiFleetsInfo();
-	if ($hapiFleetsInfo == null){
+	//get report object that was generated when user viewed the report
+	$report = Session::getReport();
+	if ($report == null){
 		header('', true, 400);
 		echo 'Report has not been generated.';
 		exit();
-	}
-	
-	//build Report object
-	$report = new Report();
-	foreach ($hapiFleetsInfo as $hapiFleetInfo){
-		$hapiFleets = $hapiFleetInfo->getFleets();
-		foreach ($hapiFleets as $hapiFleet){
-			$report->player = $player;
-			$race = $hapiFleet->getRace();
-			if ($race == HAPI::RACE_AZTERK){
-				$report->azterkScouts += $hapiFleet->getScouts();
-				$report->azterkBombers += $hapiFleet->getBombers();
-				$report->azterkDestroyers += $hapiFleet->getDestroyers();
-				$report->azterkCruisers += $hapiFleet->getCruisers();
-				$report->azterkArmies += $hapiFleet->getGroundArmies();
-				$report->azterkArmies += $hapiFleet->getCarriedArmies();
-			} else if ($race == HAPI::RACE_HUMAN){
-				$report->humanScouts += $hapiFleet->getScouts();
-				$report->humanBombers += $hapiFleet->getBombers();
-				$report->humanDestroyers += $hapiFleet->getDestroyers();
-				$report->humanCruisers += $hapiFleet->getCruisers();
-				$report->humanArmies += $hapiFleet->getGroundArmies();
-				$report->humanArmies += $hapiFleet->getCarriedArmies();
-			} else if ($race == HAPI::RACE_XILLOR){
-				$report->xillorScouts += $hapiFleet->getScouts();
-				$report->xillorBombers += $hapiFleet->getBombers();
-				$report->xillorDestroyers += $hapiFleet->getDestroyers();
-				$report->xillorCruisers += $hapiFleet->getCruisers();
-				$report->xillorArmies += $hapiFleet->getGroundArmies();
-				$report->xillorArmies += $hapiFleet->getCarriedArmies();
-			}
-		}
 	}
 	
 	//save to database
