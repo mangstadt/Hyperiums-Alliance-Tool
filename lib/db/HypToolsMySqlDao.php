@@ -785,6 +785,26 @@ class HypToolsMySqlDao implements HypToolsDao{
 		
 		$report->id = $this->db->lastInsertId();
 		$report->submitDate = new DateTime("now");
+		
+		foreach ($report->infiltrations as $infil){
+			$sql = "
+			INSERT INTO infiltrations
+			(reportId,  planetName,  planetTag,  x,  y,  level,  security,  captive) VALUES
+			(:reportId, :planetName, :planetTag, :x, :y, :level, :security, :captive)
+			";
+			$stmt = $this->db->prepare($sql);
+			$stmt->bindValue(":reportId", $report->id, PDO::PARAM_INT);
+			$stmt->bindValue(":planetName", $infil->planetName, PDO::PARAM_STR);
+			$stmt->bindValue(":planetTag", $infil->planetTag, PDO::PARAM_STR);
+			$stmt->bindValue(":x", $infil->x, PDO::PARAM_INT);
+			$stmt->bindValue(":y", $infil->y, PDO::PARAM_INT);
+			$stmt->bindValue(":level", $infil->level, PDO::PARAM_INT);
+			$stmt->bindValue(":security", $infil->security, PDO::PARAM_INT);
+			$stmt->bindValue(":captive", $infil->captive ? 1 : 0, PDO::PARAM_INT);
+			$stmt->execute();
+			
+			$infil->id = $this->db->lastInsertId();
+		}
 	}
 	
 	//override
@@ -838,6 +858,28 @@ class HypToolsMySqlDao implements HypToolsDao{
 			$player->game = $game;
 			
 			$reports[] = $report;
+		}
+		
+		//fetch infiltrations
+		foreach ($reports as $report){
+			$sql = "SELECT * FROM infiltrations WHERE reportId = :reportId";
+			$stmt = $this->db->prepare($sql);
+			$stmt->bindValue(":reportId", $report->id, PDO::PARAM_INT);
+			$stmt->execute();
+			while ($row = $stmt->fetch()){
+				$infil = new Infiltration();
+				$infil->id = $row['infiltrationId'];
+				$infil->report = $report;
+				$infil->planetName = $row['planetName'];
+				$infil->planetTag = $row['planetTag'];
+				$infil->x = $row['x'];
+				$infil->y = $row['y'];
+				$infil->level = $row['level'];
+				$infil->security = $row['security'];
+				$infil->captive = $this->bool($row['captive']);
+				$report->infiltrations[] = $infil;
+			}
+			
 		}
 		
 		return $reports;

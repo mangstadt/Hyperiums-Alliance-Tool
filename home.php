@@ -190,6 +190,71 @@ $submitLog = $dao->selectLastPlayerSubmitLog($player);
 			html += '</tr></table>';
 			return html;
 		}
+
+		/**
+		 * Builds the percentage bar for infiltrations.
+		 * @param percent the infiltration percentage (0 thru 100)
+		 * @return the html code
+		 */
+		function generatePercentageBar(percent){
+			var width = 110;
+			var leftWidth = Math.ceil(width * (percent / 100));
+			var rightWidth = width - leftWidth;
+			
+			html = '<table width="' + width + '" border="0" cellspacing="0" cellpadding="0" class="blueborder"><tbody><tr>';
+			
+			html += '<td width="' + leftWidth + '" bgcolor="#333333" style="text-align:right">';
+			if (percent >= 50){
+				html += '<font color="#AAAA77" face="verdana,arial" size="1">' + percent + '%</font>';
+			}
+			html += '</td>';
+			
+			html += '<td width="0" bgcolor="#00FF00"></td>';
+			
+			html += '<td width="' + rightWidth + '">';
+			if (percent < 50){
+				html += '<font color="#AAAA77" face="verdana,arial" size="1">' + percent + '%</font>';
+			}
+			html += '</td>';
+			
+			html += '</tr></tbody></table>';
+
+			return html;
+		}
+
+		/**
+		 * Builds the table that displays all infiltrations.
+		 * @param infiltrations the infiltrations
+		 * @return the HTML table
+		 */
+		function generateInfilTable(infiltrations){
+			var html = '<table cellspacing="1" cellpadding="1" border="0">';
+			for (var i = 0; i < infiltrations.length; i++){
+				var infil = infiltrations[i];
+				
+				html += '<tr>';
+				
+				html += '<td><b>' + infil.planetName;
+				if (infil.planetTag){
+					html += ' [' + infil.planetTag + ']';
+				}
+				html += '</b> (' + infil.x + ',' + infil.y + ')</td>';
+
+				if (infil.captive){
+					html += '<td style="padding-left:10px; color:#98F" colspan="2"><b>Captive</b></td>';
+				} else {
+					html += '<td style="padding-left:10px"><font size="1">Infiltr. level</font></td>';
+					html += '<td style="padding-left:10px">' + generatePercentageBar(infil.level) + '</td>';
+					html += '<td style="padding-left:10px"><font size="1">Security level</font></td>';
+					html += '<td style="padding-left:10px">' + generatePercentageBar(infil.security) + '</td>';
+				}
+				
+				html += '</tr>';
+			}
+			html += '</table>';
+
+			return html;
+		}
 	
 		function prepareReport(){
 			$("prepareDiv").style.display = "none";
@@ -233,6 +298,8 @@ $submitLog = $dao->selectLastPlayerSubmitLog($player);
 
 						$("exploitsBars").innerHTML = generateExploitsBars(report.exploits);
 						$("exploits").innerHTML = addCommas(report.exploits);
+
+						$("infilTable").innerHTML = report.infiltrations.length == 0 ? '<i>None</i>' : generateInfilTable(report.infiltrations);
 	
 						$("report").style.display = "block";
 						$("submitDiv").style.display = "block";
@@ -467,7 +534,7 @@ $submitLog = $dao->selectLastPlayerSubmitLog($player);
 										</td>
 									</tr>
 								</table>
-								<br /><br />
+								<br />
 								
 								<b>Trade Report</b>
 								<table>
@@ -479,8 +546,8 @@ $submitLog = $dao->selectLastPlayerSubmitLog($player);
 								</table>
 								<br />
 								
-								<b>Infiltration Report</b><br />
-								<i>Coming soon...</i><br />
+								<b>Infiltration Report</b>
+								<div id="infilTable"></div>
 							</div>
 							
 							<div align="center" id="message"></div>

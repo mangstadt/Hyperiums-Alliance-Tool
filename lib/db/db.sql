@@ -142,13 +142,44 @@ CREATE TABLE IF NOT EXISTS reports(
 	factories INT NOT NULL,
 	
 	exploits INT NOT NULL
-);
+) ENGINE=InnoDB; --for "ON DELETE CASCADE" in infiltrations table
+
+CREATE TABLE IF NOT EXISTS infiltrations(
+	infiltrationId INT PRIMARY KEY AUTO_INCREMENT,
+	
+	--the report that this infiltration belongs to
+	reportId INT NOT NULL,
+	
+	--the name of the infiltrated planet
+	planetName VARCHAR(50) NOT NULL,
+	
+	--the alliance tag of the infiltrated planet (if it has one)
+	--this is not a reference to the "alliances" table because the alliance here may not be in the alliances table (the alliance may have been created after the alliances table was updated with the data file)
+	planetTag VARCHAR(5),
+	
+	--the coordinates of the planet
+	x INT NOT NULL,
+	y INT NOT NULL,
+	
+	--the infiltration level (e.g. "23" for 23%)
+	level INT NOT NULL,
+	
+	--the security level (e.g. "90" for 90%)
+	security INT NOT NULL,
+	
+	--whether the infiltrated planet is captive or not
+	captive TINYINT(1) NOT NULL,
+	
+	--delete this infiltration automatically when its report is deleted
+	--for cascade to work, this relation must be declared separately (cannot add "REFERENCES ..." to column definition)
+	FOREIGN KEY (reportId) REFERENCES reports(reportId) ON DELETE CASCADE 
+) ENGINE=InnoDB; --for "ON DELETE CASCADE"
 
 --Keeps track of each time the player submits a report.
 CREATE TABLE IF NOT EXISTS submitLogs(
 	submitLogId INT PRIMARY KEY AUTO_INCREMENT,
 	
-	--the player
+	--the player who submitted the report
 	playerId INT NOT NULL REFERENCES players(playerId),
 	
 	--the date the player submitted a report

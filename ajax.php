@@ -64,6 +64,17 @@ if ($method == 'report'){
 	foreach ($hapiPlanetInfos as $hapiPlanetInfo){
 		$report->factories += $hapiPlanetInfo->getNumFactories();
 		$report->exploits += $hapiPlanetInfo->getNumExploits();
+		foreach ($hapiPlanetInfo->getInfiltrations() as $hapiInfil){
+			$infil = new ajax\Infiltration();
+			$infil->planetName = $hapiInfil->getPlanetName();
+			$infil->planetTag = $hapiInfil->getPlanetTag();
+			$infil->x = $hapiInfil->getPlanetX();
+			$infil->y = $hapiInfil->getPlanetY();
+			$infil->level = $hapiInfil->getLevel();
+			$infil->security = $hapiInfil->getSecurity();
+			$infil->captive = $hapiInfil->isCaptive() == 1;
+			$report->infiltrations[] = $infil;
+		}
 	}
 	
 	//save to the session so the exact same data can be used when the user submits the report
@@ -111,6 +122,8 @@ if ($method == 'report'){
 	$ajaxReport->factories = $report->factories;
 	
 	$ajaxReport->exploits = $report->exploits;
+	
+	$ajaxReport->infiltrations = $report->infiltrations;
 	
 	//send response
 	header('Content-Type: application/json');

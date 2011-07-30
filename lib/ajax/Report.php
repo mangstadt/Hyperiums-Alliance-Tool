@@ -30,4 +30,6 @@ class Report{
 	public $factories = 0;
 	
 	public $exploits = 0;
+	
+	public $infiltrations = array();
 }

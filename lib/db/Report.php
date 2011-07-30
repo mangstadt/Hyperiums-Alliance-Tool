@@ -41,4 +41,10 @@ class Report{
 	public $factories = 0;
 	
 	public $exploits = 0;
+	
+	/**
+	 * The infiltrations in the report.
+	 * @var array(Infiltration)
+	 */
+	public $infiltrations = array();
 }

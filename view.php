@@ -179,6 +179,14 @@ foreach ($reports as $report){
 									<?php echo fleetTable($report)?>
 									<?php echo avgPTable($report)?>
 									<?php echo exploitsTable($report)?>
+									Infiltrations:
+									<?php
+									if (count($report->infiltrations) == 0):
+										?><i>None</i><?php
+									else:
+										?><div style="margin-left:10px;"><?php echo infilTable($report)?></div><?php
+									endif;
+									?>
 								</td>
 								
 								<?php
@@ -376,6 +384,11 @@ function fleetTableFormat($num){
 	return number_format($num);
 }
 
+/**
+ * Builds the bars used to represent the number of exploits.
+ * @param integer $exploits the number of exploits
+ * @return string the html table
+ */
 function exploitsBars($exploits){
 	$blocks = array(
 		array(1000, 'gen13'),
@@ -399,6 +412,11 @@ function exploitsBars($exploits){
 	return $html;
 }
 
+/**
+ * Builds the table that shows the number of exploits.
+ * @param Report $report the report
+ * @return string the html table
+ */
 function exploitsTable(Report $report){
 	ob_start();
 	?>
@@ -410,5 +428,74 @@ function exploitsTable(Report $report){
 		</tr>
 	</table>
 	<?php
+	return ob_get_clean();
+}
+
+/**
+ * Builds the percentage bar for infiltrations.
+ * @param integer $percent the infiltration percentage (0 thru 100)
+ * @return string the html code
+ */
+function generatePercentageBar($percent){
+	$width = 70;
+	$leftWidth = ceil($width * ($percent / 100));
+	$rightWidth = $width - $leftWidth;
+	
+	$html = '<table width="' . $width . '" border="0" cellspacing="0" cellpadding="0" class="blueborder"><tbody><tr>';
+	
+	$html .= '<td width="' . $leftWidth . '" bgcolor="#333333" style="text-align:right">';
+	if ($percent >= 50){
+		$html .= '<font color="#AAAA77" face="verdana,arial" size="1">' . $percent . '%</font>';
+	}
+	$html .= '</td>';
+	
+	$html .= '<td width="0" bgcolor="#00FF00"></td>';
+	
+	$html .= '<td width="' . $rightWidth . '">';
+	if ($percent < 50){
+		$html .= '<font color="#AAAA77" face="verdana,arial" size="1">' . $percent . '%</font>';
+	}
+	$html .= '</td>';
+	
+	$html .= '</tr></tbody></table>';
+
+	return $html;
+}
+
+/**
+ * Builds the table that displays all infiltrations.
+ * @param Report $report the report
+ * @return string the HTML table
+ */
+function infilTable(Report $report){
+	ob_start();
+	?><table cellspacing="1" cellpadding="1" border="0"><?php
+	foreach ($report->infiltrations as $infil){
+		?>
+		<tr>
+		
+		<td><b><?php echo $infil->planetName?>
+		<?php
+		if ($infil->planetTag != null):
+			?> [<?php echo $infil->planetTag?>]<?php
+		endif;
+		?>
+		</b> (<?php echo $infil->x?>,<?php echo $infil->y?>)</td>
+		
+		<?php
+		if ($infil->captive):
+			?><td style="padding-left:5px; color:#98F" colspan="4"><b>Captive</b></td><?php
+		else:
+			?>
+			<td style="padding-left:5px"><font size="1">Infiltr:</font></td>
+			<td style="padding-left:5px"><?php echo generatePercentageBar($infil->level)?></td>
+			<td style="padding-left:5px"><font size="1">Security:</font></td>
+			<td style="padding-left:5px"><?php echo generatePercentageBar($infil->security)?></td>
+			<?php
+		endif;
+		?></tr><?php
+	}
+	?></table><?php
+
 	return ob_get_clean();
 }

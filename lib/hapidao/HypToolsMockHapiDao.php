@@ -4,6 +4,7 @@ namespace hapidao;
 use HAPI\Game;
 use HAPI\FleetsInfo;
 use HAPI\Fleet;
+use HAPI\Infiltration;
 use HAPI\PlanetInfo;
 
 /**
@@ -107,12 +108,33 @@ class HypToolsMockHapiDao implements HypToolsHapiDao{
 		$pi->setName("Mercury");
 		$pi->setNumFactories(rand(10, 1000));
 		$pi->setNumExploits(rand(200, 5000));
+			$is = array();
+			$i = new Infiltration();
+			$i->setPlanetName("Pluto");
+			$i->setPlanetX(rand(-500, 500));
+			$i->setPlanetY(rand(-500, 500));
+			$i->setPlanetTag("Super");
+			$i->setLevel(rand(10, 80));
+			$i->setSecurity(90);
+			$i->setCaptive(0);
+			$is[] = $i;
+		$pi->setInfiltrations($is);
 		$pis[] = $pi;
 		
 		$pi = new PlanetInfo();
 		$pi->setName("Venus");
 		$pi->setNumFactories(rand(10, 1000));
 		$pi->setNumExploits(rand(200, 5000));
+			$is = array();
+			$i = new Infiltration();
+			$i->setPlanetName("Uranus");
+			$i->setPlanetX(rand(-500, 500));
+			$i->setPlanetY(rand(-500, 500));
+			$i->setLevel(90);
+			$i->setSecurity(100);
+			$i->setCaptive(1);
+			$is[] = $i;
+		$pi->setInfiltrations($is);
 		$pis[] = $pi;
 		
 		$pi = new PlanetInfo();
