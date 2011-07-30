@@ -26,6 +26,7 @@ $method = @$_REQUEST['method'];
 if ($method == 'report'){
 	//query Hyperiums
 	$hapiFleetsInfo = $hapiDao->getFleetsInfo();
+	$hapiPlanetInfos = $hapiDao->getPlanetInfo();
 
 	//build Report object
 	$report = new db\Report();
@@ -59,6 +60,9 @@ if ($method == 'report'){
 				}
 			}
 		}
+	}
+	foreach ($hapiPlanetInfos as $hapiPlanetInfo){
+		$report->factories += $hapiPlanetInfo->getNumFactories();
 	}
 	
 	//save to the session so the exact same data can be used when the user submits the report
@@ -102,6 +106,8 @@ if ($method == 'report'){
 	$ajaxReport->avgSpaceP += $report->xillorDestroyers * AvgP::XILLOR_DESTROYER;
 	$ajaxReport->avgSpaceP += $report->xillorCruisers * AvgP::XILLOR_CRUISER;
 	$ajaxReport->avgGroundP += $report->xillorArmies * AvgP::XILLOR_ARMY;
+	
+	$ajaxReport->factories = $report->factories;
 	
 	//send response
 	header('Content-Type: application/json');

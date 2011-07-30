@@ -15,25 +15,25 @@ class HypToolsRealHapiDao implements HypToolsHapiDao{
 		$this->hapi = $hapi;
 	}
 	
+	//override
 	public function setPlayerIdentifier($hapi){
 		$this->hapi = $hapi;
 	}
 	
-	/**
-	 * Gets all games.
-	 * @return array(HAPI\Game) the games
-	 */
+	//override
 	public function getGames(){
 		return Cache::getGamesList(function(){
 			return HAPI::getAllGames();
 		});
 	}
 	
-	/**
-	 * Gets fleets info.
-	 * @return array(HAPI\FleetsInfo) the fleets info
-	 */
+	//override
 	public function getFleetsInfo(){
 		return $this->hapi->getFleetsInfo();
+	}
+	
+	//override
+	public function getPlanetInfo(){
+		return $this->hapi->getPlanetInfo();
 	}
 }

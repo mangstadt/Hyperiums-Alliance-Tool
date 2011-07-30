@@ -26,4 +26,6 @@ class Report{
 	
 	public $avgSpaceP = 0;
 	public $avgGroundP = 0;
+	
+	public $factories = 0;
 }

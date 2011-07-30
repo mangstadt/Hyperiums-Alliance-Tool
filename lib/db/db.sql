@@ -137,7 +137,9 @@ CREATE TABLE IF NOT EXISTS reports(
 	xillorBombers INT NOT NULL,
 	xillorDestroyers INT NOT NULL,
 	xillorCruisers INT NOT NULL,
-	xillorArmies INT NOT NULL
+	xillorArmies INT NOT NULL,
+	
+	factories INT NOT NULL
 );
 
 --Keeps track of each time the player submits a report.

@@ -4,6 +4,7 @@ namespace hapidao;
 use HAPI\Game;
 use HAPI\FleetsInfo;
 use HAPI\Fleet;
+use HAPI\PlanetInfo;
 
 /**
  * Generates mock HAPI webservice data.
@@ -96,5 +97,27 @@ class HypToolsMockHapiDao implements HypToolsHapiDao{
 		sleep(2);
 		
 		return $fis;
+	}
+	
+	//override
+	public function getPlanetInfo(){
+		$pis = array();
+
+		$pi = new PlanetInfo();
+		$pi->setName("Mercury");
+		$pi->setNumFactories(rand(10, 1000));
+		$pis[] = $pi;
+		
+		$pi = new PlanetInfo();
+		$pi->setName("Venus");
+		$pi->setNumFactories(rand(10, 1000));
+		$pis[] = $pi;
+		
+		$pi = new PlanetInfo();
+		$pi->setName("Mars");
+		$pi->setNumFactories(rand(10, 1000));
+		$pis[] = $pi;
+		
+		return $pis;
 	}
 }

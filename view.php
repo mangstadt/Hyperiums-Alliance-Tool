@@ -69,6 +69,8 @@ foreach ($reports as $report){
 	$reportTotals->xillorBombers += $report->xillorBombers;
 	$reportTotals->xillorCruisers += $report->xillorCruisers;
 	$reportTotals->xillorArmies += $report->xillorArmies;
+	
+	$reportTotals->factories += $report->factories;
 }
 
 ?>
@@ -270,6 +272,8 @@ function avgPTable(Report $report){
 		$groundAvgPText = number_format($groundAvgP / 1000, 1) . "K";
 	}
 	
+	$factoriesText = number_format($report->factories);
+	
 	ob_start();
 	?>
 	<table cellspacing="1" cellpadding="1" border="0">
@@ -282,6 +286,10 @@ function avgPTable(Report $report){
 			<td>Ground AvgP:</td>
 			<td><?php echo avgPBars($groundAvgP)?></td>
 			<td><?php echo $groundAvgPText?></td>
+		</tr>
+		<tr>
+			<td><img src="img/factory.gif" /> Factories:</td>
+			<td colspan="2"><?php echo $factoriesText?></td>
 		</tr>
 	</table>
 	<?php

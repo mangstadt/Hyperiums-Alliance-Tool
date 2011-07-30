@@ -166,7 +166,7 @@ $submitLog = $dao->selectLastPlayerSubmitLog($player);
 		function prepareReport(){
 			$("prepareDiv").style.display = "none";
 			$("loading").style.display = "block";
-			$("loadingMessage").innerHTML = "Please wait while your report is generated...";
+			$("loadingMessage").innerHTML = "Please wait while your report is generated.<br />This may take some time...";
 	
 			var xmlhttp = newXmlhttp();
 			xmlhttp.onreadystatechange = function(){
@@ -200,6 +200,8 @@ $submitLog = $dao->selectLastPlayerSubmitLog($player);
 						$("spaceAvgP").innerHTML = generateAvgPText(report.avgSpaceP);
 						$("groundAvgPBars").innerHTML = generateAvgPBars(report.avgGroundP);
 						$("groundAvgP").innerHTML = generateAvgPText(report.avgGroundP);
+
+						$("factories").innerHTML = addCommas(report.factories);
 	
 						$("report").style.display = "block";
 						$("submitDiv").style.display = "block";
@@ -425,6 +427,10 @@ $submitLog = $dao->selectLastPlayerSubmitLog($player);
 													<td>Ground AvgP:</td>
 													<td id="groundAvgPBars"></td>
 													<td id="groundAvgP"></td>
+												</tr>
+												<tr>
+													<td><img src="img/factory.gif" /> Factories:</td>
+													<td colspan="2" id="factories"></td>
 												</tr>
 											</table>
 										</td>

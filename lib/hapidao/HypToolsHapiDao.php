@@ -23,4 +23,10 @@ interface HypToolsHapiDao {
 	 * @return array(HAPI\FleetsInfo) the fleets info
 	 */
 	public function getFleetsInfo();
+	
+	/**
+	 * Gets info on each of the player's controlled planets.
+	 * @return array(HAPI\PlanetInfo) the planet info
+	 */
+	public function getPlanetInfo();
 }
