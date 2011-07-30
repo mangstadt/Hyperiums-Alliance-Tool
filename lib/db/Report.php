@@ -39,4 +39,6 @@ class Report{
 	public $xillorArmies = 0;
 	
 	public $factories = 0;
+	
+	public $exploits = 0;
 }

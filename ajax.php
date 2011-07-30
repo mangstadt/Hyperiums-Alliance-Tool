@@ -63,6 +63,7 @@ if ($method == 'report'){
 	}
 	foreach ($hapiPlanetInfos as $hapiPlanetInfo){
 		$report->factories += $hapiPlanetInfo->getNumFactories();
+		$report->exploits += $hapiPlanetInfo->getNumExploits();
 	}
 	
 	//save to the session so the exact same data can be used when the user submits the report
@@ -108,6 +109,8 @@ if ($method == 'report'){
 	$ajaxReport->avgGroundP += $report->xillorArmies * AvgP::XILLOR_ARMY;
 	
 	$ajaxReport->factories = $report->factories;
+	
+	$ajaxReport->exploits = $report->exploits;
 	
 	//send response
 	header('Content-Type: application/json');

@@ -759,8 +759,8 @@ class HypToolsMySqlDao implements HypToolsDao{
 	//override
 	public function insertReport(Report $report){
 		$sql = "INSERT INTO reports
-		( playerId, submitDate,  azterkScouts,  azterkBombers,  azterkDestroyers,  azterkCruisers,  azterkArmies,  humanScouts,  humanBombers,  humanDestroyers,  humanCruisers,  humanArmies, 	xillorScouts,  xillorBombers,  xillorDestroyers,  xillorCruisers, 	xillorArmies,  factories) VALUES
-		(:playerId, Now(),       :azterkScouts, :azterkBombers, :azterkDestroyers, :azterkCruisers, :azterkArmies, :humanScouts, :humanBombers, :humanDestroyers, :humanCruisers, :humanArmies,	:xillorScouts, :xillorBombers, :xillorDestroyers, :xillorCruisers,	:xillorArmies, :factories)
+		( playerId, submitDate,  azterkScouts,  azterkBombers,  azterkDestroyers,  azterkCruisers,  azterkArmies,  humanScouts,  humanBombers,  humanDestroyers,  humanCruisers,  humanArmies, 	xillorScouts,  xillorBombers,  xillorDestroyers,  xillorCruisers, 	xillorArmies,  factories,  exploits) VALUES
+		(:playerId, Now(),       :azterkScouts, :azterkBombers, :azterkDestroyers, :azterkCruisers, :azterkArmies, :humanScouts, :humanBombers, :humanDestroyers, :humanCruisers, :humanArmies,	:xillorScouts, :xillorBombers, :xillorDestroyers, :xillorCruisers,	:xillorArmies, :factories, :exploits)
 		";
 		$stmt = $this->db->prepare($sql);
 		$stmt->bindValue(":playerId", $report->player->id, PDO::PARAM_INT);
@@ -780,6 +780,7 @@ class HypToolsMySqlDao implements HypToolsDao{
 		$stmt->bindValue(":xillorCruisers", $report->xillorCruisers, PDO::PARAM_INT);
 		$stmt->bindValue(":xillorArmies", $report->xillorArmies, PDO::PARAM_INT);
 		$stmt->bindValue(":factories", $report->factories, PDO::PARAM_INT);
+		$stmt->bindValue(":exploits", $report->exploits, PDO::PARAM_INT);
 		$stmt->execute();
 		
 		$report->id = $this->db->lastInsertId();
@@ -821,6 +822,7 @@ class HypToolsMySqlDao implements HypToolsDao{
 			$report->xillorCruisers = $row['xillorCruisers'];
 			$report->xillorArmies = $row['xillorArmies'];
 			$report->factories = $row['factories'];
+			$report->exploits = $row['exploits'];
 			
 			$player = new Player();
 			$player->id = $row['playerId'];

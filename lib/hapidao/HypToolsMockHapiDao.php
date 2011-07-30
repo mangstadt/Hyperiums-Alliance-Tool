@@ -106,16 +106,19 @@ class HypToolsMockHapiDao implements HypToolsHapiDao{
 		$pi = new PlanetInfo();
 		$pi->setName("Mercury");
 		$pi->setNumFactories(rand(10, 1000));
+		$pi->setNumExploits(rand(200, 5000));
 		$pis[] = $pi;
 		
 		$pi = new PlanetInfo();
 		$pi->setName("Venus");
 		$pi->setNumFactories(rand(10, 1000));
+		$pi->setNumExploits(rand(200, 5000));
 		$pis[] = $pi;
 		
 		$pi = new PlanetInfo();
 		$pi->setName("Mars");
 		$pi->setNumFactories(rand(10, 1000));
+		$pi->setNumExploits(rand(200, 5000));
 		$pis[] = $pi;
 		
 		return $pis;

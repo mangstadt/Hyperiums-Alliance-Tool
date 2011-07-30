@@ -162,6 +162,34 @@ $submitLog = $dao->selectLastPlayerSubmitLog($player);
 			}
 			return avgP;
 		}
+
+		/**
+		 * Generates a HTML table for displaying the exploitation bars.
+		 * @param exploits the number of exploitations
+		 * @return the HTML table
+		 */
+		function generateExploitsBars(exploits){
+			var html = '<table cellspacing="1" cellpadding="1" border="0"><tr>';
+			
+			var blocks = [
+				[1000, 'gen13'],
+				[100, 'gen12'],
+				[10, 'gen11'],
+				[1, 'gen10']
+			];
+			var mod = exploits;
+			for (var i = 0; i < blocks.length; i++){
+				var block = blocks[i];
+				var count = Math.floor(mod / block[0]);
+				for (var j = 0; j < count; j++){
+					html += '<td class="gen ' + block[1] + '"></td>';
+				}
+				mod = mod % block[0];
+			}
+
+			html += '</tr></table>';
+			return html;
+		}
 	
 		function prepareReport(){
 			$("prepareDiv").style.display = "none";
@@ -202,6 +230,9 @@ $submitLog = $dao->selectLastPlayerSubmitLog($player);
 						$("groundAvgP").innerHTML = generateAvgPText(report.avgGroundP);
 
 						$("factories").innerHTML = addCommas(report.factories);
+
+						$("exploitsBars").innerHTML = generateExploitsBars(report.exploits);
+						$("exploits").innerHTML = addCommas(report.exploits);
 	
 						$("report").style.display = "block";
 						$("submitDiv").style.display = "block";
@@ -438,8 +469,14 @@ $submitLog = $dao->selectLastPlayerSubmitLog($player);
 								</table>
 								<br /><br />
 								
-								<b>Trade Report</b><br />
-								<i>Coming soon...</i><br />
+								<b>Trade Report</b>
+								<table>
+									<tr>
+										<td>Exploitations: </td>
+										<td id="exploitsBars"></td>
+										<td id="exploits"></td>
+									</tr>
+								</table>
 								<br />
 								
 								<b>Infiltration Report</b><br />

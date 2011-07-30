@@ -28,4 +28,6 @@ class Report{
 	public $avgGroundP = 0;
 	
 	public $factories = 0;
+	
+	public $exploits = 0;
 }

@@ -71,6 +71,8 @@ foreach ($reports as $report){
 	$reportTotals->xillorArmies += $report->xillorArmies;
 	
 	$reportTotals->factories += $report->factories;
+	
+	$reportTotals->exploits += $report->exploits;
 }
 
 ?>
@@ -143,13 +145,13 @@ foreach ($reports as $report){
 				</div>
 				
 				<div class="block">
-					<h1>Fleet Status Report</h1>
+					<h1>Reports</h1>
 					<?php 
 					if (count($reports) == 0):
 						?><i>No reports submitted.</i><?php
 					else:
 						?>
-						<h2>[<?php echo htmlspecialchars($alliance->tag)?>] Total Fleet Power</h2>
+						<h2>Accumulated Report Data</h2>
 						<div align="center" style="border-bottom:5px solid #fff; padding-bottom:15px;">
 							<table cellspacing="10">
 								<tr>
@@ -157,9 +159,10 @@ foreach ($reports as $report){
 									<td><?php echo avgPTable($reportTotals)?></td>
 								</tr>
 							</table>
+							<?php echo exploitsTable($reportTotals)?>
 						</div>
 						
-						<h2>Fleets by Player</h2>
+						<h2>Reports by Player</h2>
 						<table width="100%" cellpadding="10">
 							<?php
 							for ($i = 0; $i < count($reports); $i++):
@@ -175,6 +178,7 @@ foreach ($reports as $report){
 									Last Submission: <?php echo htmlspecialchars($report->submitDate->format("Y-m-d G:i T"))?>
 									<?php echo fleetTable($report)?>
 									<?php echo avgPTable($report)?>
+									<?php echo exploitsTable($report)?>
 								</td>
 								
 								<?php
@@ -370,4 +374,41 @@ function fleetTableFormat($num){
 		return '-';
 	}
 	return number_format($num);
+}
+
+function exploitsBars($exploits){
+	$blocks = array(
+		array(1000, 'gen13'),
+		array(100, 'gen12'),
+		array(10, 'gen11'),
+		array(1, 'gen10'),
+	);
+	
+	$html = '';
+	$mod = $exploits;
+	$html .= '<table cellspacing="1" cellpadding="1" border="0"><tr>';
+	foreach ($blocks as $block){
+		$count = floor($mod / $block[0]);
+		for ($i = 0; $i < $count; $i++){
+			$html .= '<td class="gen ' . $block[1] . '"></td>';
+		}
+		$mod = $mod % $block[0];
+	}
+	$html .= '</tr></table>';
+	
+	return $html;
+}
+
+function exploitsTable(Report $report){
+	ob_start();
+	?>
+	<table cellspacing="1" cellpadding="1" border="0">
+		<tr>
+			<td>Exploitations: </td>
+			<td><?php echo exploitsBars($report->exploits)?></td>
+			<td><?php echo number_format($report->exploits)?></td>
+		</tr>
+	</table>
+	<?php
+	return ob_get_clean();
 }

@@ -286,6 +286,7 @@ class HypToolsMockDao implements HypToolsDao{
 			$r->xillorCruisers = rand(100, 1000);
 			$r->xillorArmies = rand(50, 500);
 			$r->factories = rand(10, 1000);
+			$r->exploits = rand(200, 5000);
 			$this->reports[] = $r;
 			$s = new SubmitLog();
 			$s->id = $this->submitLogsNextId++;
@@ -314,6 +315,7 @@ class HypToolsMockDao implements HypToolsDao{
 			$r->xillorCruisers = rand(100, 1000);
 			$r->xillorArmies = rand(50, 500);
 			$r->factories = rand(10, 1000);
+			$r->exploits = rand(200, 5000);
 			$this->reports[] = $r;
 			$s = new SubmitLog();
 			$s->id = $this->submitLogsNextId++;
