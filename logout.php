@@ -1,12 +1,9 @@
 <?php
 require_once 'lib/bootstrap.php';
-session_start();
-$hapi = @$_SESSION['hapi'];
-if ($hapi == null){
+if (!Session::isLoggedIn()){
 	header('Location: index.php');
 	exit();
 }
 
-//$hapi->logout();
 session_destroy();
 header("Location: index.php?loggedout");
