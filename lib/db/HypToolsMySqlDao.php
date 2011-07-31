@@ -862,7 +862,7 @@ class HypToolsMySqlDao implements HypToolsDao{
 		
 		//fetch infiltrations
 		foreach ($reports as $report){
-			$sql = "SELECT * FROM infiltrations WHERE reportId = :reportId";
+			$sql = "SELECT * FROM infiltrations WHERE reportId = :reportId ORDER BY planetName";
 			$stmt = $this->db->prepare($sql);
 			$stmt->bindValue(":reportId", $report->id, PDO::PARAM_INT);
 			$stmt->execute();

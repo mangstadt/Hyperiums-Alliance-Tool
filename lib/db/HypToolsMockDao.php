@@ -741,6 +741,10 @@ class HypToolsMockDao implements HypToolsDao{
 		foreach ($this->reports as $r){
 			foreach ($this->permissions as $p){
 				if ($r->player->id == $p->player->id && $alliance->id == $p->alliance->id){
+					usort($r->infiltrations, function($a, $b){
+						//sort infiltrations by planet name
+						return strcasecmp($a->planetName, $b->planetName);
+					});
 					$rs[] = $r;
 				}
 			}

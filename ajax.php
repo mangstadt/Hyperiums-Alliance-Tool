@@ -75,6 +75,10 @@ if ($method == 'report'){
 			$infil->captive = $hapiInfil->isCaptive() == 1;
 			$report->infiltrations[] = $infil;
 		}
+		usort($report->infiltrations, function($a, $b){
+			//sort infiltrations by planet name
+			return strcasecmp($a->planetName, $b->planetName);
+		});
 	}
 	
 	//save to the session so the exact same data can be used when the user submits the report
